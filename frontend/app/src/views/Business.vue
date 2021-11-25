@@ -117,8 +117,8 @@
             <td >{{ bu.name }}</td>
             <td >{{ bu.product_family }}</td>
             <td >{{ bu.description }}</td>
-            <td >{{ bu.created_at }}</td>
-            <td >{{ bu.updated_at }}</td>
+            <td >{{ new Date(bu.created_at).toLocaleString('pt-BR') }}</td>
+            <td >{{ new Date(bu.updated_at).toLocaleString('pt-BR') }}</td>
             <td style="max-width: 100px;">
               <button @click="loadBu(bu.id)" type="button" class="btn btn-primary btn-sm me-3"><i class="bi bi-eye-fill"></i></button>
               <button @click="removeBu(bu.id)" v-scroll-to="'#bu-table'" type="button" class="btn btn-danger btn-sm" ><i class="far fa-trash-alt"></i></button>

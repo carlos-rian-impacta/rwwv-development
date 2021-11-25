@@ -4,8 +4,11 @@ export default {
 	listApprover: () => {
 		return http.get('/approver')
 	},
-	listApproverApprover: () => {
+	listApproverTrue: () => {
 		return http.get('/approver?approver=true')
+	},
+	listApproverByBudgetId: (id) => {
+		return http.get('/approver?budget_id=' +  id)
 	},
 	removeApprover: (id) => {
 		return http.delete('/approver/' + id)

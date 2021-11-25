@@ -553,5 +553,8 @@ form {
   width: 100px;
 }
 
+th, tr{
+  text-align: center;
+}
 
 </style>

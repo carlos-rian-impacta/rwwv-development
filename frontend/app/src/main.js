@@ -3,6 +3,7 @@ import App from './App.vue'
 import router from './router'
 import VCalendar from 'v-calendar'
 import VueScrollTo  from 'vue-scrollto';
+import money from 'v-money'
 
 import '@fortawesome/fontawesome-free/js/all'
 
@@ -17,5 +18,12 @@ app.use(VCalendar, {
       } 
     }
   });
+app.use(money, {
+  decimal: ',',
+  thousands: '.',
+  prefix: 'R$ ',
+  precision: 2,
+  masked: false
+})
 app.use(VueScrollTo)
 app.use(router).mount('#app')

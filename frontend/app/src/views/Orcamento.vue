@@ -28,7 +28,7 @@
               :disabled="control.accordion.bu"
             >
               <i class="bi-plus-square-fill pe-2" style="font-size: 20px;"></i>
-              Informe o nome e status do seu orçamento.
+              Informe nome, status e aprovador
             </button>
           </h2>
           <div id="panelsStayOpen-collapseOne" class="accordion-collapse collapse" :class="accordion.collOne" aria-labelledby="panelsStayOpen-headingOne">
@@ -118,7 +118,7 @@
               :disabled="control.accordion.bu"
             >
               <i class="bi-briefcase-fill pe-2" style="font-size: 20px;" ></i>
-              Selecione a BU, Familia de Produto e Aprovador.
+              Selecione uma BU e Família de Produto
             </button>
           </h2>
           <div id="panelsStayOpen-collapseTwo" class="accordion-collapse collapse" :class="accordion.collTwo" aria-labelledby="panelsStayOpen-headingTwo">
@@ -204,7 +204,7 @@
           </h2>
           <div id="panelsStayOpen-collapseThree" class="accordion-collapse collapse" :class="accordion.collThree" aria-labelledby="panelsStayOpen-headingThree">
             <div class="accor-01 accordion-body" style="width: 100%">
-              <div class="d-flex justify-content-between" style="width: 100%">
+              <div class="d-flex justify-content-between" style="width: 100%;">
                 <div class="budget col-12 required">
                   <label for="year" class="form-label">Ano</label>
                   <select
@@ -259,23 +259,54 @@
                     required
                   >
                     <option :selected="form.month.type"> {{ form.month.type }} </option>
-                    <option v-if="form.month.type != 'Gastos'" value="Gastos">
-                      Gastos
+                    <option v-if="form.month.type != 'Despesas'" value="Despesas">
+                      Despesas
                     </option>
                     <option v-if="form.month.type != 'Receita'" value="Receita">
                       Receita
                     </option>
                   </select>
                 </div>
+                
+                <div class="budget-finance col-12">
+                  <label for="description" class="form-label">Valor</label>
+                  <input
+                    :disabled="disableForm"
+                    :border='borders.value' 
+                    v-model="form.month.value"
+                    type="number"
+                    min="0"
+                    class="form-control"
+                    placeholder="valor"
+                  />
+                  <label for="description" class="form-label">{{ new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(form.month.value ? form.month.value.toFixed(2) : 0) }}</label>
+                </div>
 
-                <currency-input 
-                  :options="{ currency: 'BRL',currencyDisplay: 'hidden', precision: 2, autoDecimalDigits: false }"
-                  :disable="disableForm"
-                  :border='borders.value' 
-                  v-model="form.month.value"
-                />
+                <div class="budget-finance col-12">
+                  <label for="description" class="form-label">Custo %</label>
+                  <input
+                    :disabled="disableForm || form.month.type != 'Receita'"
+                    id="cost"
+                    v-model="form.month.cost"
+                    type="number"
+                    class="form-control"
+                    placeholder="Custo%"
+                    v
+                  />
+                  <label for="description" class="form-label">{{ form.month.type == 'Receita' ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format((form.month.cost / 100) * (form.month.value ? form.month.value : 0 ).toFixed(2)) : 'R$ 0' }}</label>
+                </div>
+
+                <div class="card" style="width: 18rem;">
+                  <div class="card-header" style="text-align: center;">
+                    <b>Resumo do Orçamento</b>
+                  </div>
+                  <ul class="list-group list-group-flush">
+                    <li class="list-group-item"><b>Custo:</b> {{ convertNumber(resume.cost) }}</li>
+                    <li class="list-group-item"><b>Valor:</b>  {{ convertNumber(resume.valor) }}</li>
+                    <li class="list-group-item"><b>Resultado líquido:</b> {{ convertNumber(form.month.type != 'Receita' ? 0 : resume.liquido) }}</li>
+                  </ul>
+                </div>
               </div>
-              
               <div class="d-flex flex-column bd-highlight" style="width: 100%">
                 <div class="col-12">
                   <label for="description" class="form-label">Descrição</label>
@@ -315,24 +346,26 @@
                 <table class="table table-bordered shadow">
                   <thead class="table table-dark border border-white">
                     <tr class="border border-secondary">
-                      <th scope="col">BU</th>
-                      <th scope="col">Familia</th>
                       <th scope="col">Ano</th>
                       <th scope="col">Mês</th>
+                      <th scope="col">BU</th>
+                      <th scope="col">Família de Produto</th>
                       <th scope="col">Tipo</th>
                       <th scope="col">Valor</th>
+                      <th scope="col">Custo</th>
                       <th scope="col">%</th>
                       <th scope="col">Remover</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr v-for="month in form.months" :key="month.value">
-                      <td class="lines">{{ getBuById(month.bu_id) }}</td>
-                      <td class="lines">{{ getFamilyById(month.bu_id) }}</td>
                       <td class="lines">{{ month.year }}</td>
                       <td class="lines">{{ month.month }}</td>
+                      <td class="lines">{{ getBuById(month.bu_id) }}</td>
+                      <td class="lines">{{ getFamilyById(month.bu_id) }}</td>
                       <td class="lines">{{ month.type }}</td>
                       <td class="lines">{{ new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(month.value) }}</td>
+                      <td class="lines">{{ new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format((month.cost / 100) * month.value) }}</td>
                       <td class="lines">{{ month.percent }}</td>
                       <td class="lines">
                         <button 
@@ -347,20 +380,24 @@
                       </td>
                     </tr>
                     <tr class="table-dark border border-dark">
-                      <td colspan="8">
+                      <td colspan="9">
                         <div class="d-flex justify-content-around" style="width: 100%">
                           <div style="font-size:18px">
-                            <i class="bi-dash-circle" style="font-size:20px" ></i> 
-                            Total de Gastos: {{ form.totals.gastos }}
+                            <i class="bi bi-dash-circle" style="font-size:20px" ></i> 
+                            Total de Despesas: {{ convertNumber(form.totals.despesas) }}
+                          </div>
+                          <div style="font-size:18px">
+                            <i class="bi bi-building" style="font-size:20px" ></i> 
+                            Total de Custos: {{ convertNumber(form.totals.cost) }}
                           </div>
                           <div style="font-size:18px">
                             <i class="bi bi-plus-circle" style="font-size:20px"></i> 
-                            Total de Receitas: {{ form.totals.receita }}
+                            Total de Receitas: {{ convertNumber(form.totals.receita) }}
                           </div>
+
                           <div style="font-size:18px" >
                             <i class="fa fa-balance-scale" style="font-size:20px"></i> 
-                            Resultado Liquido: {{ form.totals.balanco }} 
-                            <!-- Porcentagem: {{ form.totals.percent }} % -->
+                            Resultado Liquido: {{ convertNumber(form.totals.balanco)}}
                           </div>
                         </div>
                       </td>
@@ -403,25 +440,55 @@
           buttonColor="btn btn-danger" 
           buttonIcon="bi-x-circle-fill" 
           buttonType="reset"/>
-        <DefaultButton
-          style="background-color: #138D75; color: white;"
-          class="action-button me-3" 
-          buttonText="Enviar para aprovação" 
-          @click="onReset" 
-          buttonColor="btn" 
-          buttonIcon="fa fa-paper-plane" 
-          buttonType="reset"/>
       </div>
     </form>
 
     <div id="budget-table" class="table-func d-flex row g-0 px-4 border border-danger rounded p-3 mt-1 px-4">
       <h5 class="card-title">Listagem de Orçamento</h5>
-      <div class="status_tag d-flex justify-content-around">
-        <p class="text-start"><i class="bi bi-circle-fill me-3" style="color: gray;"></i>Rascunho.</p>
-        <p class="text-start"><i class="bi bi-circle-fill me-3" style="color: blue;"></i>Aguardando aprovação.</p>
-        <p class="text-start"><i class="bi bi-circle-fill me-3" style="color: brown;"></i>Reprovado.</p>
-        <p class="text-start"><i class="bi bi-circle-fill me-3" style="color: orange;"></i>Refazer.</p>
-        <p class="text-start"><i class="bi bi-circle-fill me-3" style="color: green;"></i>Aprovado.</p>
+      <div class="status-card d-flex justify-content-between mb-2">
+        <div class="card shadow" style="min-width: 49.8%;">
+          <div class="card-header">
+            <b>Status</b>
+          </div>
+          <div class="card-body d-flex justify-content-around">
+            <p class="text-start"><i class="bi bi-stickies-fill me-3" style="font-size: 1.3rem; color: black;"></i>Rascunho.</p>
+            <p class="text-start"><i class="bi bi-question-circle-fill me-3" style="font-size: 1.3rem; color: blue;"></i>Aguardando aprovação.</p>
+            <p class="text-start"><i class="bi bi-x-circle-fill me-3" style="font-size: 1.3rem; color: red;"></i>Reprovado.</p>
+            <p class="text-start"><i class="bi bi-eraser-fill me-3" style="font-size: 1.3rem; color: gold"></i>Refazer.</p>
+            <p class="text-start"><i class="bi bi-check-circle-fill me-3" style="font-size: 1.3rem; color: green;"></i>Aprovado.</p>
+          </div>
+        </div>
+        <div class="card shadow" style="min-width: 49.8%;">
+          <div class="card-header">
+            <b>Ações</b>
+          </div>
+          <div class="card-body d-flex justify-content-around">
+            <p class="text-start"><button type="button" class="button-micro btn btn-primary btn-sm m-0">
+              <i class="bi bi-eye-fill"></i>
+            </button>
+            Visualizar</p>
+
+            <p class="text-start"><button type="button" class="button-micro btn btn-warning btn-sm m-0">
+              <i class="fa fa-paper-plane"></i>
+            </button>
+            Solicitar aprovação</p>
+
+            <p class="text-start"><button type="button" class="button-micro btn btn-success btn-sm m-0">
+              <i class="bi bi-check-circle-fill"></i>
+            </button>
+            Aprovar</p>
+
+            <p class="text-start"><button type="button" class="button-micro btn btn-danger btn-sm m-0">
+              <i class="bi bi-x-circle-fill"></i>
+            </button>
+            Reprovar</p>
+
+            <p class="text-start"><button type="button" class="button-micro btn btn-primary btn-sm m-0">
+              <i class="bi bi-pencil-square"></i>
+            </button>
+            Editar </p>
+          </div>
+        </div>
       </div>
       <table class="table table-bordered shadow">
         <thead class="table table-dark border border-white">
@@ -430,6 +497,10 @@
             <th scope="col">Status</th>
             <th scope="col">Mensagem</th>
             <th scope="col">Última Atualização</th>
+            <th scope="col">Despesas</th>
+            <th scope="col">Custos</th>
+            <th scope="col">Receita</th>
+            <th scope="col">Valor líquido</th>
             <th scope="col">Ações</th>
           </tr>
         </thead>
@@ -437,11 +508,25 @@
           <tr v-for="bud in budgetList" :key="bud.id">
             <td class="lines">{{ bud.name }}</td>
             <td class="lines">
-              <i class="bi bi-circle-fill" :style="getStatusIcon(bud.status)"></i>
+              <i :class="getStatusIcon(bud.status)" :style="getStatusColor(bud.status)"></i>
             </td>
             <td class="lines">{{ bud.status[bud.status.length-1].message || '' }}</td>
-            <td class="lines">{{ bud.status[bud.status.length-1].updated_at || '' }}</td>
+            <td class="lines">{{ new Date(bud.status[bud.status.length-1].updated_at).toLocaleString('pt-BR') || '' }}</td>
+            <td class="lines">{{ new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(bud.total.g.toFixed(2)) }}</td>
+            <td class="lines">{{ new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(bud.total.c.toFixed(2)) }}</td>
+            <td class="lines">{{ new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(bud.total.r.toFixed(2)) }}</td>
+            <td class="lines">{{ new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(bud.total.vl.toFixed(2)) }}</td>
             <td class="d-flex flex-row justify-content-around">
+              <button 
+                @click="loadBuget(bud.id, true)" 
+                type="button"
+                class="btn btn-primary btn-sm m-0"
+                data-bs-toggle="tooltip" 
+                data-bs-placement="left" 
+                title="Visualizar Orçamento"
+                ><i class="bi bi-eye-fill"></i>
+              </button>
+
               <button :disabled="getStatusByList(bud.status) == 'draft' ? false : true"
                 @click="changeStatus(bud.id)" 
                 type="button"
@@ -473,6 +558,7 @@
               </button>
 
               <button :disabled="getStatusByList(bud.status) == 'draft' || getStatusByList(bud.status) == 'remake' ? false : true" 
+                @click="loadBuget(bud.id)" 
                 type="button"
                 class="btn btn-primary btn-sm m-0"
                 data-bs-toggle="tooltip" 
@@ -498,21 +584,66 @@ import DefaultTitle from "../components/DefaultTitle.vue";
 import AlertMessage from "../components/AlertMessage.vue";
 import BU from '../services/bu.js'
 import Employee from '../services/employee.js'
-import CurrencyInput from '../components/Money.vue'
 import Budget from '../services/budget.js'
 import StatusBudget from '../services/status.js'
 import Approver from '../services/approver.js'
 import Month from '../services/month.js'
+
 
 export default {
   name: 'Orcamento',
   components: {
     DefaultButton,
     DefaultTitle,
-    AlertMessage,
-    CurrencyInput 
+    AlertMessage
   },
   methods: {
+    calculateResume() {
+      this.resume.cost = this.form.month.type == 'Receita' ? (this.form.month.cost / 100) * (this.form.month.value ? this.form.month.value : 0 ) : 0
+      this.resume.valor = this.form.month.value ? this.form.month.value : 0
+      this.resume.liquido = this.resume.valor ? this.resume.valor - this.resume.cost : 0  
+      console.log("imposto:", this.resume.imposto, "cost:", this.resume.cost, "valor:", this.resume.valor, "liquido:", this.resume.liquido)
+    },
+    saveBudget (id_field) {
+      this.getBu().then(
+        this.getApprover().then( () => {     
+          const data = {name: this.form.status.name, employee_id: this.user.id}
+          Budget.createBudget(data)
+            .then((resp) => {
+              this.dataBudget.budget.data = resp.data
+              this.saveStatus().then(() => {
+                this.saveApprover().then(() => {
+                  console.log(this.validation.status_name, this.validation.status, this.validation.approver)
+                  if (this.validation.status_name && this.validation.status && this.validation.approver) {
+                    this.disableForm = false
+                    this.disableFormBudget = true
+                    this.accordion.collTwo = 'show'
+                    this.accordion.collOne = ''
+                    this.borders.approver = ''
+                    this.borders.status_name = ''
+                    this.borders.status = ''
+                    window.setTimeout(function() {
+                      document.getElementById(id_field).focus();
+                    }, 1);
+                  }
+                  this.alerts.form.success = true
+                  this.alerts.form.successText = "Orçamento criado com sucesso."
+                  this.budgetStatus = true
+                })
+              })
+            }).catch((err) => {
+              console.log(err)
+              this.alerts.form.error = true
+              this.alerts.form.errorText = err.response.data.detail
+              this.budgetStatus = false
+            }).finally(this.disableAlertForm())
+          }
+        )
+      )
+    },
+    convertNumber(value) {
+      return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value) || 0
+    },
     collapseAccordion (id_collapse, id_field, coll=true) {
       if (id_field == 'year') {
         this.validationSelector(this.form.bu.name, "name")
@@ -526,28 +657,14 @@ export default {
             }, 1);
             this.getBu()
           }
-        }, 250)
+        }, 100)
       } else if (id_field == 'business') {
         this.validationSelector(this.form.status.status, "status")
         this.validationText(this.form.status.name, "status_name")
         this.validationSelector(this.form.bu.approver, "approver")
-      
-        this.saveBudget()
-        console.log(this.budgetStatus)
-        setTimeout(() => {
-          if (this.validation.status_name && this.validation.status && this.validation.approver && coll && this.budgetStatus) {
-            this.disableForm = false
-            this.disableFormBudget = true
-            this.accordion.collTwo = 'show'
-            this.accordion.collOne = ''
-            this.borders.approver = ''
-            this.borders.status_name = ''
-            this.borders.status = ''
-            window.setTimeout(function() {
-              document.getElementById(id_field).focus();
-            }, 1);
-          }
-        }, 250)
+        if(this.validation.status_name && this.validation.status && this.validation.approver) {
+          this.saveBudget(id_field)
+        }
       }
     },
     collapseNow(id_collapse, id_field) {
@@ -572,13 +689,13 @@ export default {
       }
       return st.status
     },
-    getStatusIcon(status) {
+    getStatusColor(status) {
       const icons = {
-        draft: 'color: gray;',
-        approve: 'color: blue;',
-        denied: 'color: brown;',
-        remake: 'color: orange;',
-        approved: 'color: green;',
+        draft: 'color: black; font-size: 1.3rem',
+        approve: 'color: blue; font-size: 1.3rem',
+        denied: 'color: red; font-size: 1.3rem',
+        remake: 'color: gold; font-size: 1.3rem',
+        approved: 'color: green; font-size: 1.3rem',
       }
       const st = status[status.length-1]
       if (!st) {
@@ -586,11 +703,55 @@ export default {
       }
       return icons[st.status]
     },
+    getStatusIcon(status) {
+      const icons = {
+        draft: 'bi bi-stickies-fill',
+        approve: 'bi bi-question-circle-fill',
+        denied: 'bi bi-x-circle-fill',
+        remake: 'bi bi-eraser-fill',
+        approved: 'bi bi-check-circle-fill'
+      }
+      const st = status[status.length-1]
+      if (!st) {
+        return ''
+      }
+      return icons[st.status]
+    },
+    calculateTotals (months ) {
+      const values = {
+        g: 0,
+        r: 0,
+        c: 0,
+        vl: 0
+      }
+      months.forEach(val => {
+          if (val.type == 'expenditure'){
+            values.g += parseFloat(val.value)
+          }else if (val.type == 'income'){
+            values.r += parseFloat(val.value)
+            values.c += (val.cost / 100) * val.value
+          }
+        })
+      values.vl = (values.r - (values.g + values.c))
+      return values
+    },
     listBudgets () {
       Budget.listBudget(this.user.id)
         .then(resp => {
-          console.log(resp.data.budgets)
           this.budgetList = resp.data.budgets
+          this.budgetList.forEach(v => {
+            const total = this.calculateTotals(v.months)
+            v.total = total
+          })
+          this.budgetList.forEach(v => {
+            Approver.listApproverByBudgetId(v.id)
+              .then(resp => {
+                v.approver = resp.data.approver || 'Sem aprovador'
+              }).catch(err => {
+                console.log(err)
+              })
+          })
+          console.log(this.budgetList)
         }).catch(err => {
           console.log(err)
         })
@@ -663,7 +824,12 @@ export default {
       this.validation.type = false
       this.validation.value = false
       this.validation.description = false
-      this.validation.comment = false   
+      this.validation.comment = false
+      
+      this.resume.imposto = 0
+      this.resume.cost = 0
+      this.resume.valor = 0
+      this.resume.liquido = 0
 
       this.borders.bu = ''
       this.borders.product_family = ''
@@ -708,7 +874,7 @@ export default {
           })
       }
     },  
-    getApprover() {
+    async getApprover() {
       Employee.listEmployeeByEmail(this.form.bu.approver)
       .then((resp) => {
         this.dataBudget.bu.approver = resp.data
@@ -716,34 +882,13 @@ export default {
         console.log("Approver", err)
       })
     },
-    getBu () {
+    async getBu () {
       const data = this.form.bus.filter((v) => v.name == this.form.bu.name && v.product_family == this.form.bu.product_family)
       this.dataBudget.bu.bu = data[0]
     },
-    saveBudget () {
-      this.getBu()
-      this.getApprover()
-      const data = {name: this.form.status.name, employee_id: this.user.id}
-      Budget.createBudget(data)
-      .then((resp) => {
-        this.dataBudget.budget.data = resp.data
-        this.saveStatus()
-        setTimeout(() => {
-          this.saveApprover()
-        }, 1000)
-        this.alerts.form.success = true
-        this.alerts.form.successText = "Orçamento criado com sucesso."
-        this.budgetStatus = true
-      }).catch((err) => {
-        console.log(err)
-        this.alerts.form.error = true
-        this.alerts.form.errorText = err.response.data.detail
-        this.budgetStatus = false
-      }).finally(this.disableAlertForm())
-    },
-    saveStatus() {
+    async saveStatus() {
       const status = this.status.filter((v) => v.value == this.form.status.status)[0].name
-      const data = {status: status, current: true, budget_id: this.dataBudget.budget.data.id}
+      const data = {status: status, current: true, budget_id: this.dataBudget.budget.data.id, message: status == 'draft' ? "Rascunho" : ''}
       StatusBudget.createStatusBudget(data)
       .then((resp) => {
         this.dataBudget.budget.status = resp.data
@@ -751,18 +896,22 @@ export default {
         console.log(err.response.data)
       })
     },
-    saveApprover () {
-      this.getApprover()
+    async saveApprover () {
+      
       const data = {
         budget_id:  this.dataBudget.budget.data.id, 
         approver_id: this.dataBudget.bu.approver.id
       }
+      console.log(this.dataBudget.bu.approver)
+      console.log(data)
       Approver.createApprover(data)
-      .then((resp) => {
-        console.log(resp.data)
-      }).catch((err) => {
-        console.log(err.response.data)
-      })
+        .then((resp) => {
+          console.log(resp.data)
+        }).catch((err) => {
+          console.log(err.response.data)
+        })
+      
+      
     },
     onSubmit(event) {
       event.preventDefault();
@@ -770,10 +919,12 @@ export default {
         this.alerts.form.error = true
         this.alerts.form.errorText = "O orçamento não pode ser salvo. Verifique se você preencheu todos os campos e adicionou pelo menos um orçamento!"
       } else {
-        this.form.months.forEach((item) => {
+        const len = (this.form.months.length - 1)
+        this.form.months.forEach((item, index) => {
           const data = {...item}
           data.month = this.months.filter(v => v.name == item.month)[0].value
           data.type = item.type == 'Receita' ? 'income' : 'expenditure'
+          data.cost = data.cost || 0
           Month.createMonth(data)
           .then(resp => {
             console.log(resp.data)
@@ -781,11 +932,17 @@ export default {
             console.log(err.response.data)
             console.log(err.request.data)
           })
-        }),
-        this.alerts.form.success = true
-        this.alerts.form.successText = 'Orçamento gerado com sucesso.'
+          console.log("len", len, "index", index)
+          if (len == index){
+            this.listBudgets()
+            this.alerts.form.success = true
+            this.alerts.form.successText = 'Orçamento gerado com sucesso.'
+            this.onReset()
+          }
+        }) 
       }
       this.disableAlertForm()
+      
     },
     // =======
     onChange(event) {
@@ -858,39 +1015,37 @@ export default {
           this.form.month.month = 'Selecione'
           this.form.month.type = 'Selecione'
           this.form.month.value = ''
+          this.form.month.cost = ''
           this.form.month.description = ''
 
           this.form.totals.receita = 0
-          this.form.totals.gastos = 0
+          this.form.totals.despesas = 0
           this.form.totals.balanco = 0
-          this.form.totals.percent = 0
+          //this.form.totals.percent = 0
+          this.form.totals.cost = 0
           this.form.month.id += 1
 
           this.form.months.forEach((val) => {
+            console.log(val)
             const value = val.value
-            if (val.type == 'Gastos'){
-              this.form.totals.gastos += parseFloat(value)
+            if (val.type == 'Despesas'){
+              this.form.totals.despesas += parseFloat(value)
             }else if (val.type == 'Receita'){
               this.form.totals.receita += parseFloat(value)
+              this.form.totals.cost = (this.form.totals.receita * (val.cost / 100))
             }
           })
           
           this.form.months.forEach((val) => {
             const value = val.value
-            if (val.type == 'Gastos'){
-              val.percent = ((value / this.form.totals.gastos) * 100).toFixed(2) + '%'
+            if (val.type == 'Despesas'){
+              val.percent = ((value / this.form.totals.despesas) * 100).toFixed(2) + '%'
             }else if (val.type == 'Receita'){
               val.percent = ((value / this.form.totals.receita) * 100).toFixed(2) + '%'
             }
-            console.log(val)
           })
-          //this.form.totals.balanco = "R$ " + ((this.form.totals.receita - this.form.totals.gastos).toFixed(2) || 0)
-          //this.form.totals.gastos = "R$ " + this.form.totals.gastos.toFixed(2)
-          //this.form.totals.receita = "R$ " + this.form.totals.receita.toFixed(2)
-          this.form.totals.percent = ((this.form.totals.receita - this.form.totals.gastos).toFixed(2) / this.form.totals.receita).toFixed(2)
-          this.form.totals.balanco = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format((this.form.totals.receita - this.form.totals.gastos).toFixed(2) || 0)
-          this.form.totals.gastos = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(this.form.totals.gastos.toFixed(2))
-          this.form.totals.receita = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(this.form.totals.receita.toFixed(2))
+          this.form.totals.balanco = (this.form.totals.receita - (this.form.totals.despesas + this.form.totals.cost))
+          console.log(this.form.totals)
           this.validation.month = false
           this.validation.type = false
           this.validation.value = false
@@ -911,31 +1066,31 @@ export default {
       const new_data = this.form.months.filter(val => val.id != id)
       this.form.months = new_data
       this.form.totals.receita = 0
-      this.form.totals.gastos = 0
+      this.form.totals.despesas = 0
       this.form.totals.balanco = 0
+      this.form.totals.cost = 0
 
       this.form.months.forEach((val) => {
-        const value = val.value
-        if (val.type == 'Gastos'){
-          this.form.totals.gastos += parseFloat(value)
+      console.log(val)
+      const value = val.value
+        if (val.type == 'Despesas'){
+          this.form.totals.despesas += parseFloat(value)
         }else if (val.type == 'Receita'){
           this.form.totals.receita += parseFloat(value)
+          this.form.totals.cost = (this.form.totals.receita * (val.cost / 100))
         }
       })
-
+    
       this.form.months.forEach((val) => {
         const value = val.value
-        console.log(value)
-        if (val.type == 'Gastos'){
-          val.percent = ((value / this.form.totals.gastos) * 100).toFixed(2) + '%'
+        if (val.type == 'Despesas'){
+          val.percent = ((value / this.form.totals.despesas) * 100).toFixed(2) + '%'
         }else if (val.type == 'Receita'){
           val.percent = ((value / this.form.totals.receita) * 100).toFixed(2) + '%'
         }
-        console.log(val)
       })
-      this.form.totals.balanco = "R$ " + ((this.form.totals.receita - this.form.totals.gastos).toFixed(2) || 0)
-      this.form.totals.gastos = "R$ " + this.form.totals.gastos.toFixed(2)
-      this.form.totals.receita = "R$ " + this.form.totals.receita.toFixed(2)
+      this.form.totals.balanco = (this.form.totals.receita - (this.form.totals.despesas + this.form.totals.cost))
+      console.log(this.form.totals)
     },
     validationSelector (value, key) {
       if (value != 'Selecione') {
@@ -991,6 +1146,19 @@ export default {
       }
       return false
     },
+    loadBuget(budgetId, loadOnly) {
+      const budget = this.budgetList.filter(v => v.id == budgetId)[0]
+      const status = this.status.filter(v => v.name == budget.status[budget.status.length - 1].status)[0]
+      console.log(budget)
+      this.form.status.name = budget.name
+      this.form.status.status = status.value
+      this.form.bu.approver = budget.approver
+
+      console.log(this.form.status.name)
+      console.log(this.form.status.status)
+      console.log(this.form.bu.approver)
+      //this.form.months = budget.months
+    }
   },
   watch: {
     'form.bu.name' (v) {
@@ -1017,7 +1185,11 @@ export default {
     'form.month.type' (v) {
       this.validationSelector(v, 'type')
     },
+    'form.month.cost' (v) {
+      this.calculateResume()
+    },
     'form.month.value' (v) {
+      this.calculateResume()
       if (this.form.month.value) {
         this.validation.value = true
         this.borders.value = 'border border-success border-1 bg-success bg-opacity-10' 
@@ -1031,8 +1203,14 @@ export default {
     return {
       user: {},
       role: {},
+      resume: {
+        imposto: 0,
+        cost: 0,
+        valor: 0,
+        liquido: 0,
+      },
       disableFormBudget: true,
-      disableForm: true,
+      disableForm: true ,
       field_required: true,
       accordion: {
         collOne: 'show',
@@ -1064,9 +1242,10 @@ export default {
       form: {
         totals: {
           receita: 0,
-          gastos: 0,
+          despesas: 0,
           balanco: 0,
-          percent: 0
+          percent: 0,
+          cost: 0,
         },
         bu: {
           name: 'Selecione',
@@ -1081,8 +1260,9 @@ export default {
           year: 'Selecione',
           month: 'Selecione',
           type: 'Selecione',
-          value: '',
+          value: 0,
           description: '',
+          cost: 0,
           comment: '',
           id: 0
         },
@@ -1196,6 +1376,21 @@ export default {
 </script>
 
 <style scoped>
+.card-body {
+  height: 70px !important;
+  max-height: 200px;
+  min-height: 50px;
+}
+
+#calulate.card-body {
+  width: 20px;
+  height: 10px;
+}
+
+#calulate {
+  max-width: 10px;
+}
+
 .input-group .form-control {
     float: none;
 }
@@ -1231,6 +1426,11 @@ table {
   overflow: hidden;
 }
 
+.button-micro {
+  max-width: 32px;
+  max-height: 32px;
+}
+
 form {
   border-bottom: red solid 1px;
   border-left: red solid 1px;
@@ -1242,7 +1442,11 @@ form {
   width: 35%;
 }
 .budget {
-  max-width: 23%;
+  max-width: 15%;
+}
+
+.budget-finance {
+  max-width: 10%;
 }
 .col-12 {
   margin-top: 10px;

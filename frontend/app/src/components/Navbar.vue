@@ -53,18 +53,22 @@
 		<div class="user">
 			<a 
 				class="navbar-brand"
-				 
-				@click="$router.push('#')" 
-				href="#"
 			>
 				<i class="bi bi-person-circle"></i>
 				{{ user.user ? user.user.first_name : 'Usuário' }}
 			</a>
+
+			<a v-show="user.user && user.user.first_name != 'Usuário'" class="navbar-brand" @click="exit" href="#">
+				<i class="bi bi-box-arrow-right"></i>
+				Sair do sistema
+			</a>
+
 		</div>
 	</nav>
 </template>
 
 <script>
+import redirectToLogin from '../js/redirectLogin'
 export default {
     name: 'Navbar',
 	methods: {
@@ -84,6 +88,14 @@ export default {
 				}
 			}
 			this.logged = false
+		},
+		exit () {
+			localStorage.removeItem("access_token")
+			localStorage.removeItem("refresh_token")
+			this.user.user.first_name = 'Usuário'
+			console.log("removendo token")
+			window.location.href = "/login"
+			console.log("redicionando")
 		}
 	},
 	props: {

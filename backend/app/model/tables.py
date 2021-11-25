@@ -176,6 +176,7 @@ class Month(Base):
         index=True,
     )
     value = sqlalchemy.Column(sqlalchemy.Numeric(18, 2), nullable=False)
+    cost = sqlalchemy.Column(sqlalchemy.Numeric(18, 2), nullable=True, default=0)
     type = sqlalchemy.Column(sqlalchemy.Enum(EnumMonthType), nullable=False)
     description = sqlalchemy.Column(sqlalchemy.Text, nullable=True)
     comment = sqlalchemy.Column(sqlalchemy.Text, nullable=True)
