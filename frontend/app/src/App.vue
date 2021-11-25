@@ -39,22 +39,21 @@ export default {
       logged: false
     };
   },
-  async mounted() {
-    try {
-      const data = await checkLogin();
-      if (!data) {
-        console.log("USER DOES NOT EXISTS.");
-        this.redirectToLogin();
+  mounted() {
+      checkLogin().then( data => {
+        if (!data) {
+          console.log("USER DOES NOT EXISTS.");
+          this.redirectToLogin();
 
-      } else {
-        this.user = data
-        this.logged = true
-        this.i += 1
-      }
-    } catch (error) {
-      console.log("REQUEST ERROR");
-      this.redirectToLogin();
-    }
+        } else {
+          this.user = data
+          this.logged = true
+          this.i += 1
+        }
+      }).catch(error => {
+        console.log("REQUEST ERROR");
+        this.redirectToLogin();
+      })
   },
 };
 </script> 
