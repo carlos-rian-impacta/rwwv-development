@@ -68,7 +68,6 @@
 </template>
 
 <script>
-import redirectToLogin from '../js/redirectLogin'
 export default {
     name: 'Navbar',
 	methods: {
@@ -97,6 +96,7 @@ export default {
 			window.location.href = "/login"
 			console.log("redicionando")
 		}
+		
 	},
 	props: {
 		user: {
