@@ -15,6 +15,7 @@
             class="rounded"
             alt="logo"
           />
+          <p class="pt-1"><b>EasyBudget</b></p>
         </div>
         <!--EMAIL-->
         <div class="col-12">
