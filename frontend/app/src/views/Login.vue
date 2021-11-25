@@ -87,10 +87,11 @@ export default {
     },
     redirectToHome: function () {
       console.log("REDIRECT TO HOME");
-      this.$router.push({
-        name: "Home",
-        path: "/",
-      });
+      window.location.href = "/"
+      // this.$router.push({
+      //   name: "Home",
+      //   path: "/",
+      // });
     },
     onReset: function (event) {
       event.preventDefault();

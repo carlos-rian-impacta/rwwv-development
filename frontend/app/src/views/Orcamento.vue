@@ -28,7 +28,7 @@
               :disabled="control.accordion.bu"
             >
               <i class="bi-plus-square-fill pe-2" style="font-size: 20px;"></i>
-              Informe o nome e status do seu orçamento.
+              Informe nome, status e aprovador
             </button>
           </h2>
           <div id="panelsStayOpen-collapseOne" class="accordion-collapse collapse" :class="accordion.collOne" aria-labelledby="panelsStayOpen-headingOne">
@@ -118,7 +118,7 @@
               :disabled="control.accordion.bu"
             >
               <i class="bi-briefcase-fill pe-2" style="font-size: 20px;" ></i>
-              Selecione a BU, Familia de Produto e Aprovador.
+              Selecione uma BU e Família de Produto
             </button>
           </h2>
           <div id="panelsStayOpen-collapseTwo" class="accordion-collapse collapse" :class="accordion.collTwo" aria-labelledby="panelsStayOpen-headingTwo">
@@ -286,25 +286,24 @@
                   <label for="description" class="form-label">Custo %</label>
                   <input
                     :disabled="disableForm || form.month.type != 'Receita'"
-                    id="custo"
-                    v-model="form.month.custo"
+                    id="cost"
+                    v-model="form.month.cost"
                     type="number"
                     class="form-control"
                     placeholder="Custo%"
                     v
                   />
-                  <label for="description" class="form-label">{{ form.month.type == 'Receita' ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format((form.month.custo / 100) * (form.month.value ? form.month.value : 0 ).toFixed(2)) : 'R$ 0' }}</label>
+                  <label for="description" class="form-label">{{ form.month.type == 'Receita' ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format((form.month.cost / 100) * (form.month.value ? form.month.value : 0 ).toFixed(2)) : 'R$ 0' }}</label>
                 </div>
 
                 <div class="card" style="width: 18rem;">
                   <div class="card-header" style="text-align: center;">
-                    <b>Resumo</b>
+                    <b>Resumo do Orçamento</b>
                   </div>
                   <ul class="list-group list-group-flush">
-                    <li class="list-group-item">Impostos ~20%: </li>
-                    <li class="list-group-item">Custo: </li>
-                    <li class="list-group-item">Valor:  </li>
-                    <li class="list-group-item">Valor liquido: </li>
+                    <li class="list-group-item"><b>Custo:</b> {{ convertNumber(resume.cost) }}</li>
+                    <li class="list-group-item"><b>Valor:</b>  {{ convertNumber(resume.valor) }}</li>
+                    <li class="list-group-item"><b>Resultado líquido:</b> {{ convertNumber(form.month.type != 'Receita' ? 0 : resume.liquido) }}</li>
                   </ul>
                 </div>
               </div>
@@ -353,7 +352,7 @@
                       <th scope="col">Família de Produto</th>
                       <th scope="col">Tipo</th>
                       <th scope="col">Valor</th>
-                      <th scope="col">Custo%</th>
+                      <th scope="col">Custo</th>
                       <th scope="col">%</th>
                       <th scope="col">Remover</th>
                     </tr>
@@ -366,7 +365,7 @@
                       <td class="lines">{{ getFamilyById(month.bu_id) }}</td>
                       <td class="lines">{{ month.type }}</td>
                       <td class="lines">{{ new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(month.value) }}</td>
-                      <td class="lines">{{ new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format((month.custo / 100) * month.value) }}%</td>
+                      <td class="lines">{{ new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format((month.cost / 100) * month.value) }}</td>
                       <td class="lines">{{ month.percent }}</td>
                       <td class="lines">
                         <button 
@@ -384,23 +383,21 @@
                       <td colspan="9">
                         <div class="d-flex justify-content-around" style="width: 100%">
                           <div style="font-size:18px">
-                            <i class="bi-dash-circle" style="font-size:20px" ></i> 
+                            <i class="bi bi-dash-circle" style="font-size:20px" ></i> 
                             Total de Despesas: {{ convertNumber(form.totals.despesas) }}
+                          </div>
+                          <div style="font-size:18px">
+                            <i class="bi bi-building" style="font-size:20px" ></i> 
+                            Total de Custos: {{ convertNumber(form.totals.cost) }}
                           </div>
                           <div style="font-size:18px">
                             <i class="bi bi-plus-circle" style="font-size:20px"></i> 
                             Total de Receitas: {{ convertNumber(form.totals.receita) }}
                           </div>
 
-                          <div style="font-size:18px">
-                            <i class="fas fa-hand-holding-usd" style="font-size:20px"></i>
-                            Impostos Aprox.: {{ convertNumber(( 0.2 * form.totals.receita)) }}
-                          </div>
-
                           <div style="font-size:18px" >
                             <i class="fa fa-balance-scale" style="font-size:20px"></i> 
-                            Resultado Liquido: {{ convertNumber(form.totals.balanco)}} 
-                            <!-- Porcentagem: {{ form.totals.percent }} % -->
+                            Resultado Liquido: {{ convertNumber(form.totals.balanco)}}
                           </div>
                         </div>
                       </td>
@@ -443,14 +440,6 @@
           buttonColor="btn btn-danger" 
           buttonIcon="bi-x-circle-fill" 
           buttonType="reset"/>
-        <DefaultButton
-          style="background-color: #138D75; color: white;"
-          class="action-button me-3" 
-          buttonText="Enviar para aprovação" 
-          @click="onReset" 
-          buttonColor="btn" 
-          buttonIcon="fa fa-paper-plane" 
-          buttonType="reset"/>
       </div>
     </form>
 
@@ -474,6 +463,11 @@
             <b>Ações</b>
           </div>
           <div class="card-body d-flex justify-content-around">
+            <p class="text-start"><button type="button" class="button-micro btn btn-primary btn-sm m-0">
+              <i class="bi bi-eye-fill"></i>
+            </button>
+            Visualizar</p>
+
             <p class="text-start"><button type="button" class="button-micro btn btn-warning btn-sm m-0">
               <i class="fa fa-paper-plane"></i>
             </button>
@@ -504,9 +498,9 @@
             <th scope="col">Mensagem</th>
             <th scope="col">Última Atualização</th>
             <th scope="col">Despesas</th>
+            <th scope="col">Custos</th>
             <th scope="col">Receita</th>
-            <th scope="col">Impostos Aprox. 20%</th>
-            <th scope="col">Valor liquido</th>
+            <th scope="col">Valor líquido</th>
             <th scope="col">Ações</th>
           </tr>
         </thead>
@@ -519,8 +513,8 @@
             <td class="lines">{{ bud.status[bud.status.length-1].message || '' }}</td>
             <td class="lines">{{ new Date(bud.status[bud.status.length-1].updated_at).toLocaleString('pt-BR') || '' }}</td>
             <td class="lines">{{ new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(bud.total.g.toFixed(2)) }}</td>
+            <td class="lines">{{ new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(bud.total.c.toFixed(2)) }}</td>
             <td class="lines">{{ new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(bud.total.r.toFixed(2)) }}</td>
-            <td class="lines">{{ new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(bud.total.i.toFixed(2)) }}</td>
             <td class="lines">{{ new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(bud.total.vl.toFixed(2)) }}</td>
             <td class="d-flex flex-row justify-content-around">
               <button 
@@ -529,7 +523,7 @@
                 class="btn btn-primary btn-sm m-0"
                 data-bs-toggle="tooltip" 
                 data-bs-placement="left" 
-                title="Editar Orçamento"
+                title="Visualizar Orçamento"
                 ><i class="bi bi-eye-fill"></i>
               </button>
 
@@ -605,11 +599,10 @@ export default {
   },
   methods: {
     calculateResume() {
-      const imposto = 0.2 * (this.form.month.value ? this.form.month.value : 0 )
-      const gasto = this.form.month.type == 'Receita' ? (this.form.month.custo / 100) * (this.form.month.value ? this.form.month.value : 0 ) : 0
-      const valor = this.form.month.value ? this.form.month.value : 0
-      const liquido = valor ? valor - (imposto + gasto) : 0  
-      console.log("imposto:", imposto, "gasto:", gasto, "valor:", valor, "liquido:", liquido)
+      this.resume.cost = this.form.month.type == 'Receita' ? (this.form.month.cost / 100) * (this.form.month.value ? this.form.month.value : 0 ) : 0
+      this.resume.valor = this.form.month.value ? this.form.month.value : 0
+      this.resume.liquido = this.resume.valor ? this.resume.valor - this.resume.cost : 0  
+      console.log("imposto:", this.resume.imposto, "cost:", this.resume.cost, "valor:", this.resume.valor, "liquido:", this.resume.liquido)
     },
     saveBudget (id_field) {
       this.getBu().then(
@@ -728,7 +721,7 @@ export default {
       const values = {
         g: 0,
         r: 0,
-        i: 0,
+        c: 0,
         vl: 0
       }
       months.forEach(val => {
@@ -736,10 +729,10 @@ export default {
             values.g += parseFloat(val.value)
           }else if (val.type == 'income'){
             values.r += parseFloat(val.value)
+            values.c += (val.cost / 100) * val.value
           }
         })
-      values.i = (0.2 * values.r)
-      values.vl = (values.r - (values.g + values.i))
+      values.vl = (values.r - (values.g + values.c))
       return values
     },
     listBudgets () {
@@ -831,7 +824,12 @@ export default {
       this.validation.type = false
       this.validation.value = false
       this.validation.description = false
-      this.validation.comment = false   
+      this.validation.comment = false
+      
+      this.resume.imposto = 0
+      this.resume.cost = 0
+      this.resume.valor = 0
+      this.resume.liquido = 0
 
       this.borders.bu = ''
       this.borders.product_family = ''
@@ -921,10 +919,12 @@ export default {
         this.alerts.form.error = true
         this.alerts.form.errorText = "O orçamento não pode ser salvo. Verifique se você preencheu todos os campos e adicionou pelo menos um orçamento!"
       } else {
-        this.form.months.forEach((item) => {
+        const len = (this.form.months.length - 1)
+        this.form.months.forEach((item, index) => {
           const data = {...item}
           data.month = this.months.filter(v => v.name == item.month)[0].value
           data.type = item.type == 'Receita' ? 'income' : 'expenditure'
+          data.cost = data.cost || 0
           Month.createMonth(data)
           .then(resp => {
             console.log(resp.data)
@@ -932,11 +932,17 @@ export default {
             console.log(err.response.data)
             console.log(err.request.data)
           })
-        }),
-        this.alerts.form.success = true
-        this.alerts.form.successText = 'Orçamento gerado com sucesso.'
+          console.log("len", len, "index", index)
+          if (len == index){
+            this.listBudgets()
+            this.alerts.form.success = true
+            this.alerts.form.successText = 'Orçamento gerado com sucesso.'
+            this.onReset()
+          }
+        }) 
       }
       this.disableAlertForm()
+      
     },
     // =======
     onChange(event) {
@@ -1009,21 +1015,24 @@ export default {
           this.form.month.month = 'Selecione'
           this.form.month.type = 'Selecione'
           this.form.month.value = ''
-          this.form.month.custo = ''
+          this.form.month.cost = ''
           this.form.month.description = ''
 
           this.form.totals.receita = 0
           this.form.totals.despesas = 0
           this.form.totals.balanco = 0
-          this.form.totals.percent = 0
+          //this.form.totals.percent = 0
+          this.form.totals.cost = 0
           this.form.month.id += 1
 
           this.form.months.forEach((val) => {
+            console.log(val)
             const value = val.value
             if (val.type == 'Despesas'){
               this.form.totals.despesas += parseFloat(value)
             }else if (val.type == 'Receita'){
               this.form.totals.receita += parseFloat(value)
+              this.form.totals.cost = (this.form.totals.receita * (val.cost / 100))
             }
           })
           
@@ -1034,12 +1043,9 @@ export default {
             }else if (val.type == 'Receita'){
               val.percent = ((value / this.form.totals.receita) * 100).toFixed(2) + '%'
             }
-            console.log(val)
           })
-          this.form.totals.percent = ((this.form.totals.receita - this.form.totals.despesas).toFixed(2) / this.form.totals.receita).toFixed(2)
-          this.form.totals.balanco = ((0.8 * sthis.form.totals.receita) - this.form.totals.despesas)
-          this.form.totals.despesas = this.form.totals.despesas
-          this.form.totals.receita = this.form.totals.receita
+          this.form.totals.balanco = (this.form.totals.receita - (this.form.totals.despesas + this.form.totals.cost))
+          console.log(this.form.totals)
           this.validation.month = false
           this.validation.type = false
           this.validation.value = false
@@ -1062,29 +1068,29 @@ export default {
       this.form.totals.receita = 0
       this.form.totals.despesas = 0
       this.form.totals.balanco = 0
+      this.form.totals.cost = 0
 
       this.form.months.forEach((val) => {
-        const value = val.value
+      console.log(val)
+      const value = val.value
         if (val.type == 'Despesas'){
           this.form.totals.despesas += parseFloat(value)
         }else if (val.type == 'Receita'){
           this.form.totals.receita += parseFloat(value)
+          this.form.totals.cost = (this.form.totals.receita * (val.cost / 100))
         }
       })
-
+    
       this.form.months.forEach((val) => {
         const value = val.value
-        console.log(value)
         if (val.type == 'Despesas'){
           val.percent = ((value / this.form.totals.despesas) * 100).toFixed(2) + '%'
         }else if (val.type == 'Receita'){
           val.percent = ((value / this.form.totals.receita) * 100).toFixed(2) + '%'
         }
-        console.log(val)
       })
-      this.form.totals.balanco = "R$ " + ((this.form.totals.receita - this.form.totals.despesas).toFixed(2) || 0)
-      this.form.totals.despesas = "R$ " + this.form.totals.despesas.toFixed(2)
-      this.form.totals.receita = "R$ " + this.form.totals.receita.toFixed(2)
+      this.form.totals.balanco = (this.form.totals.receita - (this.form.totals.despesas + this.form.totals.cost))
+      console.log(this.form.totals)
     },
     validationSelector (value, key) {
       if (value != 'Selecione') {
@@ -1146,8 +1152,12 @@ export default {
       console.log(budget)
       this.form.status.name = budget.name
       this.form.status.status = status.value
-      this.form.bu.approver = budget.approver.email
-      this.form.months = budget.months
+      this.form.bu.approver = budget.approver
+
+      console.log(this.form.status.name)
+      console.log(this.form.status.status)
+      console.log(this.form.bu.approver)
+      //this.form.months = budget.months
     }
   },
   watch: {
@@ -1175,7 +1185,7 @@ export default {
     'form.month.type' (v) {
       this.validationSelector(v, 'type')
     },
-    'form.month.custo' (v) {
+    'form.month.cost' (v) {
       this.calculateResume()
     },
     'form.month.value' (v) {
@@ -1193,8 +1203,14 @@ export default {
     return {
       user: {},
       role: {},
-      disableFormBudget: false,
-      disableForm: false,
+      resume: {
+        imposto: 0,
+        cost: 0,
+        valor: 0,
+        liquido: 0,
+      },
+      disableFormBudget: true,
+      disableForm: true ,
       field_required: true,
       accordion: {
         collOne: 'show',
@@ -1228,7 +1244,8 @@ export default {
           receita: 0,
           despesas: 0,
           balanco: 0,
-          percent: 0
+          percent: 0,
+          cost: 0,
         },
         bu: {
           name: 'Selecione',
@@ -1245,7 +1262,7 @@ export default {
           type: 'Selecione',
           value: 0,
           description: '',
-          custo: 0,
+          cost: 0,
           comment: '',
           id: 0
         },

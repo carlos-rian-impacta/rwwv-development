@@ -12,6 +12,7 @@ class BaseMonthDefault(BaseModel):
         default_factory=lambda: datetime.now().year,
     )
     value: float
+    cost: float = None
     type: EnumMonthType
     description: str = None
     comment: str = None
@@ -26,6 +27,7 @@ class BaseMonthUpdate(BaseModel):
     month: EnumMonths = None
     year: int = Field(None, ge=datetime.now().year, le=datetime.now().year + 1)
     value: float = None
+    cost: float = None
     type: EnumMonthType = None
     description: str = None
     comment: str = None
