@@ -1,3 +1,4 @@
+from typing import List
 from fastapi import APIRouter
 from fastapi import Depends
 from fastapi import FastAPI
@@ -29,7 +30,7 @@ def init_app(app: FastAPI):
     async def post_bu(buss_u: BaseBu, db: Session = Depends(get_db)):
         return bu.insert_bu(buss_u=buss_u, db=db)
 
-    @router.get("/bu", response_model=Union[BaseModelBus, List[BaseModelBu]])
+    @router.get("/bu", response_model=BaseModelBus)
     async def get_bu_by_employee_id(
         employee_id: int = Query(...), db: Session = Depends(get_db)
     ):
