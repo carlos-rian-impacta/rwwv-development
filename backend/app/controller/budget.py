@@ -2,7 +2,7 @@ from app.schema.output.budget import BaseModelBudgetEmployee, BaseModelBudgetsEm
 from fastapi import HTTPException, status
 from app.schema.input.budget import BaseBudget
 from sqlalchemy.orm.session import Session
-from app.model.tables import Employee, Budget
+from app.model.tables import BusinessUnit, Employee, Budget
 from app.controller.employee import select_employee_by_id
 
 

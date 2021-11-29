@@ -18,10 +18,14 @@
             :disabled="disableForm"
             id="email"
             v-model="employee.email"
+            :class="borders.email"
             type="email"
             class="form-control"
             placeholder="seuemail@taimin.com.br"
           />
+          <div class="invalid-feedback">
+            O email deve ser um email da taimin, ou seja, @taimin.com.br!
+          </div>
         </div>
 
         <div class="col-12" :class="buttonUpdateDisable ? 'required' : ''">
@@ -30,10 +34,14 @@
             :disabled="disableForm"
             id="password"
             v-model="employee.password"
+            :class="borders.password"
             type="password"
             class="form-control"
             placeholder="Senha"
           />
+          <div class="invalid-feedback">
+            A senha precisa ter pelo menos 8 caracteres contendo 1 caracter especial, 1 número e 1 letra maiúscula.
+          </div>
         </div>
 
         <div class="col-12">
@@ -67,6 +75,7 @@
             v-model="employee.position"
             class="form-select"
             aria-label="Selecione o cargo."
+            :class="borders.position"
             required
           >
             <option :selected="employee.position"> {{ employee.position }} </option>
@@ -240,7 +249,6 @@ import DefaultTitle from "../components/DefaultTitle.vue";
 import AlertMessage from "../components/AlertMessage.vue";
 import DefaultTemplate from "../components/NotAccessable.vue";
 import Employee from '../services/employee.js'
-import { onBeforeMount } from '@vue/runtime-core';
 
 const positionData = {
   list: [
@@ -277,10 +285,10 @@ export default {
     DefaultTemplate
   },
   methods: {
-    isActive: function (value) {
+    isActive(value) {
       return value ? 'bi bi-check-circle-fill':'bi bi-check-circle'
     },
-    loadEmployee: function (id) {
+    loadEmployee(id) {
       this.buttonUpdateDisable = false
       this.employees.forEach(element => {
         if (element.id == id) {
@@ -296,14 +304,23 @@ export default {
         }
       });
     },
-    listEmployee: function () {
+    listEmployee() {
       Employee.listEmployee().then((resp) => {
           this.employees = resp.data
         }).catch((err) => {
           console.log("ERROR LIST EMPLOYEES")
         })
     },
-    createEmployee: function () {
+    createEmployee() {
+      if (!this.validation.email || !this.validation.password || !this.validation.position) {
+        this.alertList = ['Verifique se todos os campos requeridos foram preenchidos corretamente.']
+        this.disableAlert = true
+            setTimeout(() => {
+              this.alertList = []
+              this.disableAlert = false
+            }, 15000)
+        return
+      }
       if (confirm("Tem certeza que deseja adicionar o funcionário?")){
         const data = {...this.employee}
         console.log(data)
@@ -339,7 +356,7 @@ export default {
           })
       }
     },
-    removeEmployee: function (id) {
+    removeEmployee(id) {
       if (confirm("Você tem certeza?")){
         Employee.removeEmployee(id)
           .then(() => {
@@ -366,7 +383,16 @@ export default {
       }
       
     },
-    changeEmployee: function () {
+    changeEmployee() {
+      if (!this.validation.email) {
+        this.alertList = ['Verifique se todos os campos requeridos foram preenchidos corretamente.']
+        this.disableAlert = true
+            setTimeout(() => {
+              this.alertList = []
+              this.disableAlert = false
+            }, 10000)
+        return
+      }
       if (confirm("Tem certeza que deseja alterar o funcionário?")) {
         const data = {...this.employee}
         console.log(data)
@@ -405,7 +431,7 @@ export default {
           })
       }
     },
-    onReset: function (event) {
+    onReset(event) {
       this.employee.email = ""
       this.employee.password = ""
       this.employee.first_name = ""
@@ -422,25 +448,32 @@ export default {
       this.disableForm = true
       this.buttonNewDisable = false
       this.buttonCreateDisable = true
+      this.validation.email = false
+      this.validation.password = false
+      this.validation.position = false
+      this.borders.email = ''
+      this.borders.password = ''
+      this.borders.position = ''
     },
-    onSubmit: function (event) {
+    onSubmit(event) {
       event.preventDefault();
       console.log(this.employee)
       this.createEmployee()
     },
-    enableButton: function () {
+    enableButton() {
       if (this.employee.email != '' && this.employee.password != '' && this.employee.position != '' && this.buttonUpdateDisable) {
         this.buttonCreateDisable = true
       }else {
         this.buttonCreateDisable = false
       }
     },
-    enableForm: function () {
+    enableForm() {
       this.disableForm = false
       this.buttonCreateDisable = false
       this.buttonNewDisable = true
+      this.changeBorder(true, 'position')
     },
-    redirectToBu: function (id) {
+    redirectToBu(id) {
       this.$router.push(
         { 
           name: 'bu', 
@@ -449,7 +482,38 @@ export default {
           }
         }
       )
+    },
+    changeBorder(status, key) {
+      if (status) {
+        this.validation[key] = true
+        this.borders[key] = "is-valid";
+      } else {
+        this.validation[key] = false
+        this.borders[key] = "is-invalid";
+      }
+      if (this.disableForm) {
+        this.validation[key] = false
+        this.borders[key] = "";
+      }
     }
+  },
+  watch: {
+    'employee.email' (v) {
+      const r = '^[a-z0-9.]+@taimin\.com\.br'
+      console.log(v.match(r))
+      this.changeBorder(v.match(r), 'email')
+    },
+    'employee.password'(v) {
+      const r = '^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])(?=.{8,})'
+      if (!v) {
+        return
+      }
+      this.changeBorder(v.match(r), 'password')
+      console.log(v.match(r))
+    },
+    'employee.position'(v) {
+      this.changeBorder(true, 'position')
+    },
   },
   data () {
     return {
@@ -469,6 +533,16 @@ export default {
       },
       permission: {
         is_admin: false
+      },
+      borders: {
+        email: '',
+        password: '',
+        position: ''
+      },
+      validation: {
+        email: false,
+        password: false,
+        position: false
       },
       employees: [],
       position: positionData.list,

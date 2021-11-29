@@ -23,7 +23,7 @@ class BaseEmployeeNoPassword(BaseModel):
 class BaseEmployee(BaseEmployeeNoPassword):
     password: str = Field(
         ...,
-        regex="^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%\*#\?\&])[A-Za-z\d@$!%\*#\?\&]{8,}$",
+        regex="^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])(?=.{8,})",
     )
 
     class Config:
@@ -34,7 +34,7 @@ class BaseEmployeeToUpdate(BaseEmployee):
     email: str = Field(None, regex="^[a-z0-9.]+@taimin\.com\.br")
     password: str = Field(
         None,
-        regex="^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%\*#\?\&])[A-Za-z\d@$!%\*#\?\&]{8,}$",
+        regex="^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])(?=.{8,})",
     )
     active: bool = False
     # personal

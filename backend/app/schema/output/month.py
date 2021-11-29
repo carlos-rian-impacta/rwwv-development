@@ -1,3 +1,4 @@
+from pydantic.fields import Field
 from app.schema.output.bu import BaseModelBu
 from datetime import datetime
 from pydantic import validator
@@ -7,6 +8,8 @@ from app.schema.input.common.budget import BaseModelBudgetEmployee
 
 class BaseModelMonthDefault(BaseMonthDefault):
     id: int
+    fk_id_budget: int = Field(None, alias="id_budget")
+    fk_id_business_unit: int = Field(None, alias="id_bu")
     created_at: datetime
     updated_at: datetime
 

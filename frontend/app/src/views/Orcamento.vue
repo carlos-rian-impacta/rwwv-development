@@ -54,6 +54,9 @@
                   data-bs-placement="bottom"
                   title="O nome do status precisa ter pelo menos 5 letras."
                 />
+                <div class="invalid-feedback">
+                  Deve ter pelo menos 5 caracteres e ser um nome único.
+                </div>
               </div>
 
               <div
@@ -75,6 +78,9 @@
                 >
                   <option>{{ form.status.status }}</option>
                 </select>
+                <div class="invalid-feedback">
+                  Selecione o aprovador
+                </div>
               </div>
 
               <div class="selected col-12 required">
@@ -109,9 +115,7 @@
 
               <div class="btn-next col-12">
                 <DefaultButton
-                  @click="
-                    collapseAccordion('panelsStayOpen-collapseTwo', 'business')
-                  "
+                  @click="collapseAccordion('panelsStayOpen-collapseTwo', 'business')"
                   :disabled="disableFormBudget"
                   class="me-0 rounded-3 btn-sm"
                   buttonText="Próximo"
@@ -321,12 +325,12 @@
                   </select>
                 </div>
 
-                <div class="budget-finance col-12">
+                <div class="col-12" style="max-width: 15%">
                   <label for="description" class="form-label">Valor</label>
                   <input
                     :disabled="disableForm"
-                    :border="borders.value"
                     v-model="form.month.value"
+                    :class="borders.value"
                     type="number"
                     min="0"
                     class="form-control"
@@ -342,15 +346,16 @@
                   }}</label>
                 </div>
 
-                <div class="budget-finance col-12">
+                <div class="col-12" style="max-width: 10%">
                   <label for="description" class="form-label">Custo %</label>
                   <input
                     :disabled="disableForm || form.month.type != 'Receita'"
                     id="cost"
                     v-model="form.month.cost"
+                    :class="borders.cost"
                     type="number"
                     class="form-control"
-                    placeholder="Custo%"
+                    placeholder="11.5"
                     v
                   />
                   <label for="description" class="form-label">{{
@@ -1041,7 +1046,6 @@ export default {
                 console.log(err);
               });
           });
-          console.log(this.budgetList);
         })
         .catch((err) => {
           console.log(err);
@@ -1120,6 +1124,7 @@ export default {
       this.validation.month = false;
       this.validation.type = false;
       this.validation.value = false;
+      this.validation.cost = false;
       this.validation.description = false;
       this.validation.comment = false;
 
@@ -1138,6 +1143,7 @@ export default {
       this.borders.month = "";
       this.borders.type = "";
       this.borders.value = "";
+      this.borders.cost = "";
       this.borders.description = "";
       this.borders.comment = "";
     },
@@ -1419,34 +1425,28 @@ export default {
     validationSelector(value, key) {
       if (value != "Selecione") {
         this.validation[key] = true;
-        this.borders[key] =
-          "border border-success border-1 bg-success bg-opacity-10";
+        this.borders[key] = "is-valid";
       } else {
         this.validation[key] = false;
-        this.borders[key] =
-          "border border-danger border-1 bg-danger bg-opacity-10";
+        this.borders[key] = "is-invalid";
       }
     },
     validationText(value, key, len = null) {
       if (value.length >= (len || 5)) {
         this.validation[key] = true;
-        this.borders[key] =
-          "border border-success border-1 bg-success bg-opacity-10";
+        this.borders[key] = "is-valid";
       } else {
         this.validation[key] = false;
-        this.borders[key] =
-          "border border-danger border-1 bg-danger bg-opacity-10";
+        this.borders[key] = "is-invalid";
       }
     },
     validationNumber(value, key) {
       if (typeof value === "number") {
         this.validation[key] = true;
-        this.borders[key] =
-          "border border-success border-1 bg-success bg-opacity-10";
+        this.borders[key] = "is-valid";
       } else {
         this.validation[key] = false;
-        this.borders[key] =
-          "border border-danger border-1 bg-danger bg-opacity-10";
+        this.borders[key] = "is-invalid";
       }
     },
     validateTwo() {
@@ -1475,11 +1475,13 @@ export default {
       this.validationSelector(this.form.month.month, "month");
       this.validationSelector(this.form.month.type, "type");
       this.validationNumber(this.form.month.value, "value");
+      this.validationNumber(this.form.month.cost, "cost");
       if (
         this.validation.year &&
         this.validation.month &&
         this.validation.type &&
-        this.validation.value
+        this.validation.value &&
+        this.validation.cost
       ) {
         return true;
       }
@@ -1490,10 +1492,13 @@ export default {
       const status = this.status.filter(
         (v) => v.name == budget.status[budget.status.length - 1].status
       )[0];
-      console.log(budget)
       this.form.status.name = budget.name;
       this.form.status.status = status.value;
       this.form.bu.approver = budget.approver.email;
+      budget.months.forEach(v => {
+        v.budget_id = budget.id
+      })
+      console.log(budget.months)
       //this.form.months =  budget.months
     },
   },
@@ -1524,17 +1529,22 @@ export default {
     },
     "form.month.cost"(v) {
       this.calculateResume();
+      if (v) {
+        this.validation.cost = true;
+        this.borders.cost = "is-valid";
+      } else {
+        this.validation.cost = false;
+        this.borders.cost = "is-invalid";
+      }
     },
     "form.month.value"(v) {
       this.calculateResume();
-      if (this.form.month.value) {
+      if (v) {
         this.validation.value = true;
-        this.borders.value =
-          "border border-success border-1 bg-success bg-opacity-10";
+        this.borders.value = "is-valid";
       } else {
         this.validation.value = false;
-        this.borders.value =
-          "border border-light border-1 bg-light bg-opacity-10";
+        this.borders.value = "is-invalid";
       }
     },
   },
@@ -1653,6 +1663,7 @@ export default {
         month: false,
         type: false,
         value: false,
+        cost: false,
         description: false,
         comment: false,
       },
@@ -1663,10 +1674,12 @@ export default {
         name: "",
         status_name: "",
         status: "",
+        cost: "",
         year: "",
         month: "",
         type: "",
         value: "",
+        cost: "",
         description: "",
         comment: "",
       },
@@ -1787,23 +1800,20 @@ form {
   width: 35%;
 }
 .budget {
-  max-width: 15%;
+  max-width: 14%;
 }
 
-.budget-finance {
-  max-width: 10%;
-}
 .col-12 {
   margin-top: 10px;
   margin-bottom: 10px;
 }
 .accor-01 {
   display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  justify-content: flex-start;
-  align-items: flex-end;
-  align-content: space-between;
+	flex-direction: row;
+	flex-wrap: wrap;
+	justify-content: space-between;
+	align-items: center;
+	align-content: flex-end;
 }
 .accordion-button {
   font-size: 18px;

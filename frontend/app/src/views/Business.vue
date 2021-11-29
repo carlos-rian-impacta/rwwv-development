@@ -23,10 +23,14 @@
             :disabled="disableForm"
             id="name"
             v-model="bu.name"
+            :class="borders.name"
             type="text"
             class="form-control"
             placeholder="ARTROSCOPIA"
           />
+          <div class="invalid-feedback">
+            O nome da BU deve ter pelo menos 5 caracteres.
+          </div>
         </div>
 
         <div class="min-len col-12" :class="field_required ? 'required' : ''">
@@ -35,10 +39,14 @@
             :disabled="disableForm"
             id="product_family"
             v-model="bu.product_family"
+            :class="borders.product_family"
             type="text"
             class="form-control"
             placeholder="CAIXA DE OTICA"
           />
+          <div class="invalid-feedback">
+            A família de produto deve ter pelo menos 5 caracteres.
+          </div>
         </div>
 
         <div class="col-12">
@@ -197,39 +205,52 @@ export default {
       });
     },
     onReset (event) {
-      this.bu = {
-        id: '',
-        name: '',
-        product_family: '',
-        description: ''
-      }
+      this.disableForm = true
+      this.bu.id = ''
+      this.bu.name = ''
+      this.bu.product_family = ''
+      this.bu.description = ''
+
       this.control.buttons.new = false
       this.control.buttons.save = true
       this.control.buttons.edit = true
-      this.disableForm = true
+      this.validation.name = false
+      this.validation.product_family = false
+      
+      this.borders.name = ''
+      this.borders.product_family = ''
     },
     onNew (event) {
-      this.bu = {
-        id: '',
-        name: '',
-        product_family: '',
-        description: ''
-      }
+      this.disableForm = false
+      this.bu.id = ''
+      this.bu.name = ''
+      this.bu.product_family = ''
+      this.bu.description = ''
+
       this.control.buttons.new = true
       this.control.buttons.save = false
       this.control.buttons.edit = true
-      this.disableForm = false
+      this.validation.name = false
+      this.validation.product_family = false
+      
+      this.borders.name = ''
+      this.borders.product_family = ''
     },
     onSubmit(event) {
       event.preventDefault();
+      if (!this.validation.name || !this.validation.product_family) {
+        this.control.events.alerts.form.errorShow = true
+        this.control.events.alerts.form.errorText = 'Verifique se todos os campos requeridos estão preenchidos corretamente.'
+        this.disableAlertForm()
+        return  
+      }
+
       const data = {...this.bu}
       data.employee_id = this.localEmployeeId
       BU.createBu(data)
         .then( (resp) => {
           this.listBus(this.localEmployeeId)
-          
           this.onReset()
-
           this.control.events.alerts.form.successShow = true
           this.control.events.alerts.form.successText = 'BU adicionada com sucesso.'
           this.disableAlertForm()
@@ -244,6 +265,12 @@ export default {
         })
     },
     onChange(event) {
+      if (!this.validation.name || !this.validation.product_family) {
+        this.control.events.alerts.form.errorShow = true
+        this.control.events.alerts.form.errorText = "Verifique se todos os campos requeridos foram preenchidos corretamente."
+        this.disableAlertForm()
+        return
+      }
       event.preventDefault();
       const data = {...this.bu}
       data.employee_id = this.localEmployeeId
@@ -286,8 +313,29 @@ export default {
         this.control.events.alerts.table.errorShow = false
         this.control.events.alerts.table.errorText = ''
       }, 15000)
+    },
+    changeBorder(value, key) {
+      if (value.length >= 5) {
+        this.validation[key] = true
+        this.borders[key] = "is-valid";
+      } else {
+        this.validation[key] = false
+        this.borders[key] = "is-invalid";
+      }
+      if (this.disableForm) {
+        this.validation[key] = false
+        this.borders[key] = "";
+      }
     }
 	},
+  watch: {
+    'bu.name' (v) {
+      this.changeBorder(v, 'name')
+    },
+    'bu.product_family' (v) {
+      this.changeBorder(v, 'product_family')
+    },
+  },
 	data () {
 		return {
       localEmployeeId: '',
@@ -298,8 +346,15 @@ export default {
         product_family: '',
         description: ''
       },
+      validation: {
+        name: false,
+        product_family: false,
+      },
+      borders: {
+        name: "",
+        product_family: ""
+      },
       control: {
-        disableForm: true,
         events: {
           alerts: {
             form: {
