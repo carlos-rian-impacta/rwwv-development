@@ -969,7 +969,13 @@ export default {
       return new bootstrap.Collapse(collapse, { show: true });
     },
     getBuById(id) {
+      
       const data = this.form.bus.filter((v) => v.id == id);
+      console.log(id, data)
+      if (!data) {
+        
+      }
+
       return data[0].name;
     },
     getFamilyById(id) {
@@ -1495,11 +1501,7 @@ export default {
       this.form.status.name = budget.name;
       this.form.status.status = status.value;
       this.form.bu.approver = budget.approver.email;
-      budget.months.forEach(v => {
-        v.budget_id = budget.id
-      })
-      console.log(budget.months)
-      //this.form.months =  budget.months
+      this.form.months =  budget.months
     },
   },
   watch: {

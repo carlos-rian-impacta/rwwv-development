@@ -8,8 +8,8 @@ from app.schema.input.common.budget import BaseModelBudgetEmployee
 
 class BaseModelMonthDefault(BaseMonthDefault):
     id: int
-    fk_id_budget: int = Field(None, alias="id_budget")
-    fk_id_business_unit: int = Field(None, alias="id_bu")
+    fk_id_budget: int = Field(None, alias="budget_id")
+    fk_id_business_unit: int = Field(None, alias="bu_id")
     created_at: datetime
     updated_at: datetime
 
