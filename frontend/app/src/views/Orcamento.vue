@@ -429,7 +429,7 @@
                 buttonType="button"
               />
 
-              <div class="d-flex flex-column bd-highlight" style="width: 100%">
+              <div id="table-budget" class="d-flex flex-column bd-highlight" style="width: 100%">
                 <table class="table table-bordered shadow">
                   <thead class="table table-dark border border-white">
                     <tr class="border border-secondary">
@@ -468,10 +468,11 @@
                         }}
                       </td>
                       <td class="lines">{{ month.percent }}</td>
-                      <td class="lines">
+                      <td class="lines d-flex flex-row justify-content-around">
                         <button
                           @click="removeLine(month.id)"
                           type="button"
+                          :disabled="control.buttons.remove"
                           class="btn btn-danger btn-sm m-0"
                           data-bs-toggle="tooltip"
                           data-bs-placement="left"
@@ -570,19 +571,18 @@
 
     <div
       id="budget-table"
-      class="
-        table-func
-        d-flex
-        row
-        g-0
-        px-4
-        border border-danger
-        rounded
-        p-3
-        mt-1
-        px-4
-      "
+      class="table-func d-flex row g-0 px-4 border border-danger rounded p-3 mt-1 px-4"
     >
+      <AlertMessage
+        :alertShow="alerts.table.success"
+        :alertText="alerts.table.successText"
+        alertType="alert-success"
+      />
+      <AlertMessage
+        :alertShow="alerts.table.error"
+        :alertText="alerts.table.errorText"
+        alertType="alert-danger"
+      />
       <h5 class="card-title">Listagem de Orçamento</h5>
       <div class="status-card d-flex justify-content-between mb-2">
         <div class="card shadow" style="min-width: 49.8%">
@@ -672,7 +672,7 @@
               Reprovar
             </p>
 
-            <p class="text-start">
+            <!-- <p class="text-start">
               <button
                 type="button"
                 class="button-micro btn btn-primary btn-sm m-0"
@@ -680,7 +680,7 @@
                 <i class="bi bi-pencil-square"></i>
               </button>
               Editar
-            </p>
+            </p> -->
           </div>
         </div>
       </div>
@@ -751,7 +751,8 @@
             </td>
             <td class="d-flex flex-row justify-content-around">
               <button
-                @click="loadBuget(bud.id, true)"
+                @click="loadBuget(bud.id)"
+                v-scroll-to="'#table-budget'"
                 type="button"
                 class="btn btn-primary btn-sm m-0"
                 data-bs-toggle="tooltip"
@@ -809,7 +810,7 @@
                 <i class="bi bi-x-circle-fill"></i>
               </button>
 
-              <button
+              <!-- <button
                 :disabled="
                   getStatusByList(bud.status) == 'draft' ||
                   getStatusByList(bud.status) == 'remake'
@@ -824,7 +825,7 @@
                 title="Editar Orçamento"
               >
                 <i class="bi bi-pencil-square"></i>
-              </button>
+              </button> -->
             </td>
           </tr>
         </tbody>
@@ -969,17 +970,11 @@ export default {
       return new bootstrap.Collapse(collapse, { show: true });
     },
     getBuById(id) {
-      
-      const data = this.form.bus.filter((v) => v.id == id);
-      console.log(id, data)
-      if (!data) {
-        
-      }
-
+      const data = this.allBUs.filter((v) => v.id == id);
       return data[0].name;
     },
     getFamilyById(id) {
-      const data = this.form.bus.filter((v) => v.id == id);
+      const data = this.allBUs.filter((v) => v.id == id);
       return data[0].product_family;
     },
     getStatusByList(status) {
@@ -1073,6 +1068,13 @@ export default {
           console.log(err.response.data);
         });
     },
+    listAllBUs () {
+      BU.listAllBu().then(resp => {
+        this.allBUs = resp.data
+      }).catch(err => {
+        console.log(err)
+      })
+    },
     listProductFamily() {
       this.form.bu.product_family = "Selecione";
       const data = this.form.bus.filter((b) => b.name === this.form.bu.name);
@@ -1112,6 +1114,7 @@ export default {
       this.control.buttons.new = false;
       this.control.buttons.save = true;
       this.control.buttons.edit = true;
+      this.control.buttons.remove = true;
       this.disableForm = true;
       this.disableFormBudget = true;
       this.control.accordion.bu = false;
@@ -1161,6 +1164,7 @@ export default {
         description: "",
       };
       this.control.buttons.new = true;
+      this.control.buttons.remove = false
       this.control.buttons.save = false;
       this.control.buttons.edit = true;
       this.disableFormBudget = false;
@@ -1178,10 +1182,16 @@ export default {
           .then((resp) => {
             console.log(resp.status, resp.data);
             this.listBudgets();
+            this.alerts.table.success = true
+            this.alerts.table.successText = 'O status foi alterado com sucesso.'
           })
           .catch((err) => {
             console.log(err);
-          });
+            this.alerts.table.error = true
+            this.alerts.table.errorText = 'Ops. Problema ao alterar o status. Error: ' + err.response.data
+          }).finally(e => {
+            this.disableAlertForm()
+          })
       }
     },
     async getApprover() {
@@ -1309,10 +1319,10 @@ export default {
     },
     disableAlertTable() {
       setTimeout(() => {
-        this.control.events.alerts.table.successShow = false;
-        this.control.events.alerts.table.successText = "";
-        this.control.events.alerts.table.errorShow = false;
-        this.control.events.alerts.table.errorText = "";
+        this.alerts.table.success = false;
+        this.alerts.table.successText = "";
+        this.alerts.table.error = false;
+        this.alerts.table.errorText = "";
       }, 15000);
     },
     toReal(value) {
@@ -1358,8 +1368,7 @@ export default {
               this.form.totals.despesas += parseFloat(value);
             } else if (val.type == "Receita") {
               this.form.totals.receita += parseFloat(value);
-              this.form.totals.cost =
-                this.form.totals.receita * (val.cost / 100);
+              this.form.totals.cost += value * (val.cost / 100);
             }
           });
 
@@ -1394,6 +1403,36 @@ export default {
         }, 10000);
       }, 250);
     },
+    calculateLines() {
+      this.form.totals.receita = 0;
+      this.form.totals.despesas = 0;
+      this.form.totals.balanco = 0;
+      this.form.totals.cost = 0;
+
+      this.form.months.forEach((val) => {
+        console.log(val);
+        const value = val.value;
+        if (val.type == "Despesas") {
+          this.form.totals.despesas += parseFloat(value);
+        } else if (val.type == "Receita") {
+          this.form.totals.receita += parseFloat(value);
+          this.form.totals.cost += value * (val.cost / 100);
+        }
+      });
+
+      this.form.months.forEach((val) => {
+        const value = val.value;
+        if (val.type == "Despesas") {
+          val.percent =
+            ((value / this.form.totals.despesas) * 100).toFixed(2) + "%";
+        } else if (val.type == "Receita") {
+          val.percent =
+            ((value / this.form.totals.receita) * 100).toFixed(2) + "%";
+        }
+      });
+      this.form.totals.balanco = this.form.totals.receita - (this.form.totals.despesas + this.form.totals.cost);
+      console.log(this.form.totals);
+    },
     removeLine(id) {
       const new_data = this.form.months.filter((val) => val.id != id);
       this.form.months = new_data;
@@ -1409,7 +1448,7 @@ export default {
           this.form.totals.despesas += parseFloat(value);
         } else if (val.type == "Receita") {
           this.form.totals.receita += parseFloat(value);
-          this.form.totals.cost = this.form.totals.receita * (val.cost / 100);
+          this.form.totals.cost += value * (val.cost / 100);
         }
       });
 
@@ -1493,15 +1532,28 @@ export default {
       }
       return false;
     },
-    loadBuget(budgetId, loadOnly) {
-      const budget = this.budgetList.filter((v) => v.id == budgetId)[0];
+    loadBuget(budgetId) {
+      this.onReset()
+      const data = this.budgetList.filter((v) => v.id == budgetId)[0];
+      const budget = {...data}
+
       const status = this.status.filter(
         (v) => v.name == budget.status[budget.status.length - 1].status
       )[0];
+      budget.months.forEach(item => {
+        item.type = item.type == 'income' ? 'Receita' : 'Despesas'
+        item.month = this.months.filter(v => v.value == item.month)[0].name
+      })
       this.form.status.name = budget.name;
       this.form.status.status = status.value;
       this.form.bu.approver = budget.approver.email;
       this.form.months =  budget.months
+      this.calculateLines()
+      this.accordion.collOne = "";
+      this.accordion.collTwo = "show";
+      this.accordion.collThree = "show";
+      this.control.buttons.remove = true;
+      this.control.buttons.new = true;
     },
   },
   watch: {
@@ -1552,6 +1604,7 @@ export default {
   },
   data() {
     return {
+      allBUs: [],
       user: {},
       role: {},
       resume: {
@@ -1653,6 +1706,7 @@ export default {
           new: false,
           save: true,
           edit: true,
+          remove: true
         },
       },
       validation: {
@@ -1692,6 +1746,12 @@ export default {
           error: false,
           errorText: "",
         },
+        table: {
+          success: false,
+          successText: "",
+          error: false,
+          errorText: "",
+        },
       },
       dataBudget: {
         bu: {
@@ -1716,6 +1776,7 @@ export default {
         this.user = data;
       } else {
         this.listBUs(data.user.id);
+        this.listAllBUs()
         this.listApprovers();
         this.user = data.user;
         this.role = data.role;

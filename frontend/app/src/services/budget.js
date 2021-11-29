@@ -7,6 +7,9 @@ export default {
 	listBudget: (id) => {
 		return http.get('/budget?employee_id=' + id)
 	},
+	listBudgetById: (id) => {
+		return http.get('/budget/' + id)
+	},
 	removeBudget: (id) => {
 		return http.delete('/budget/' + id)
 	},

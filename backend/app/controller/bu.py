@@ -21,6 +21,11 @@ def select_bu_by_employee_id(employee_id: int, db: Session) -> BaseModelBus:
     return data
 
 
+def select_list_all_bus(db: Session):
+    data = db.query(BusinessUnit).all()
+    return data
+
+
 def insert_bu(buss_u: BaseBu, db: Session) -> BaseModelBu:
     if not select_employee_by_id(id=buss_u.fk_id_employees, db=db):
         raise HTTPException(
