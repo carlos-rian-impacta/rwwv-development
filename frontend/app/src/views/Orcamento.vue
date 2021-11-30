@@ -521,6 +521,15 @@
                             Resultado Liquido:
                             {{ convertNumber(form.totals.balanco) }}
                           </div>
+
+                          <div style="font-size: 18px">
+                            <i
+                              class="fa fa-balance-scale"
+                              style="font-size: 20px"
+                            ></i>
+                            % Liquido:
+                            {{ convertNumber((form.totals.receita / (form.totals.despesas + form.totals.cost))) }}
+                          </div>
                         </div>
                       </td>
                     </tr>
@@ -1111,6 +1120,7 @@ export default {
         product_family: "",
         description: "",
       };
+      this.form.months = []
       this.control.buttons.new = false;
       this.control.buttons.save = true;
       this.control.buttons.edit = true;
@@ -1353,6 +1363,10 @@ export default {
           this.form.month.value = "";
           this.form.month.cost = 0;
           this.form.month.description = "";
+
+
+          this.validation.cost = false;
+          this.borders.cost = "";
 
           this.form.totals.receita = 0;
           this.form.totals.despesas = 0;
