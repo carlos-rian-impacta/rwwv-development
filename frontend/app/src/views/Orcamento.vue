@@ -1351,7 +1351,7 @@ export default {
           this.form.month.month = "Selecione";
           this.form.month.type = "Selecione";
           this.form.month.value = "";
-          this.form.month.cost = "";
+          this.form.month.cost = 0;
           this.form.month.description = "";
 
           this.form.totals.receita = 0;
