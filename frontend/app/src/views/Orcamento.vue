@@ -180,7 +180,7 @@
 
               <div class="selected col-12 required">
                 <label for="product_family" class="form-label"
-                  >Familia de Produto</label
+                  >Família de Produto</label
                 >
                 <select
                   id="product_family"
@@ -192,7 +192,7 @@
                   :disabled="disableForm"
                   data-bs-toggle="tooltip"
                   data-bs-placement="bottom"
-                  title="Selecione uma familia de produto"
+                  title="Selecione uma Família de produto"
                   required
                 >
                   <option :selected="form.bu.product_family">
@@ -325,7 +325,7 @@
                   </select>
                 </div>
 
-                <div class="col-12" style="max-width: 15%">
+                <div class="col-12 required" style="max-width: 15%">
                   <label for="description" class="form-label">Valor</label>
                   <input
                     :disabled="disableForm"

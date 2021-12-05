@@ -7,10 +7,10 @@
 				href="/"
 				data-bs-toggle="tooltip" 
 				data-bs-placement="bottom" 
-				title="Tela de inicio"
+				title="Tela de Início"
 			>
 				<i class="bi bi-house-fill"></i>
-				Inicio
+				Início
 			</a>
 
 			<a 

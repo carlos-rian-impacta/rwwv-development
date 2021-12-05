@@ -3,7 +3,7 @@
 		<thead class="table table-dark border border-white">
 			<tr class="border border-secondary">
 				<th scope="col">Nome</th>
-				<th scope="col">Familia de Produto</th>
+				<th scope="col">Família de Produto</th>
 				<th scope="col">Descrição</th>
 				<th scope="col">Criado</th>
 				<th scope="col">Atualizado</th>

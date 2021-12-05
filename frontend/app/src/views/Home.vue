@@ -39,7 +39,7 @@
       <div class="card-body">
         <h5 class="card-title">Sobre Orçamentos</h5>
         <p class="card-text">
-          Na página de orçamento você pode gerênciar e simular orçamentos.
+          Na página de orçamento você pode gerenciar e simular orçamentos.
         </p>
       </div>
       <div class="card-footer text-muted">
