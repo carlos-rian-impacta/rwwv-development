@@ -383,22 +383,13 @@ export default {
     }
 	},
   async mounted() {
-    try {
-      const data = await checkLogin();
-      if (!data) {
-        console.log("USER DOES NOT EXISTS.");
-        redirectToLogin(this);
-      }
-      else {
-        if (data.role.is_admin) {
-          this.listBus(data.user.id)
-          this.localEmployeeId = data.user.id
-          this.user = data.user
-        }
-      }
-    } catch (error) {
-      console.log("REQUEST ERROR");
-      redirectToLogin(this);
+    if (this.employeeId !== undefined) {
+      this.listBus(this.employeeId)
+      this.localEmployeeId = this.employeeId
+    }else {
+      const me = await checkLogin()
+      this.listBus(me.user.id)
+      this.localEmployeeId = me.user.id
     }
   }
 }
