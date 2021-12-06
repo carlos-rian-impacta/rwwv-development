@@ -14,7 +14,7 @@ export default {
 		return http.delete('/approver/' + id)
 	},
 	createApprover: (data) => { 
-		return http.post('/approver/', data)
+		return http.post('/approver', data)
 	},
 	changeApprover: (id, data) => { 
 		return http.patch('/approver/' + id, data)

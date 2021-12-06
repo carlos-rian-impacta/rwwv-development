@@ -1242,7 +1242,8 @@ export default {
           console.log(resp.data);
         })
         .catch((err) => {
-          console.log(err.response.data);
+          console.log(err);
+          console.log(err.response)
         });
     },
     onSubmit(event) {
