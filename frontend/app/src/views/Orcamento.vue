@@ -521,15 +521,6 @@
                             Resultado Liquido:
                             {{ convertNumber(form.totals.balanco) }}
                           </div>
-
-                          <div style="font-size: 18px">
-                            <i
-                              class="fa fa-balance-scale"
-                              style="font-size: 20px"
-                            ></i>
-                            % Liquido:
-                            {{ convertNumber((form.totals.receita / (form.totals.despesas + form.totals.cost))) }}
-                          </div>
                         </div>
                       </td>
                     </tr>
