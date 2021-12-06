@@ -14,7 +14,7 @@ export default {
 		return http.delete('/employees/' + id)
 	},
 	createEmployee: (data) => { 
-		return http.post('/employees/', data)
+		return http.post('/employees', data)
 	},
 	changeEmployee: (id, data) => { 
 		return http.patch('/employees/' + id, data)

@@ -1268,6 +1268,8 @@ export default {
             });
           console.log("len", len, "index", index);
           if (len == index) {
+            this.listAllBUs()
+            this.listApprovers();
             this.listBudgets();
             this.alerts.form.success = true;
             this.alerts.form.successText = "Orçamento gerado com sucesso.";
@@ -1276,6 +1278,7 @@ export default {
         });
       }
       this.disableAlertForm();
+      this.disableAlertTable();
     },
     // =======
     onChange(event) {
