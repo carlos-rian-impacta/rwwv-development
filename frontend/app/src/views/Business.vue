@@ -1,6 +1,7 @@
 <template>
 	<div class="container-fluid p-1 pe-2">
     <DefaultTitle 
+      id="header-budget"
       titleText="Business Unit (Unidade de Negócio)" 
       titleIcon="bi-briefcase-fill"
     />
@@ -75,6 +76,7 @@
           buttonType="submit"
           class="action-button me-3" 
           buttonText="Salvar" 
+          v-scroll-to="'#header-budget'"
           :buttonActive="control.buttons.save" 
           buttonColor="btn btn-success" 
           buttonIcon="bi bi-check-circle-fill"/>
