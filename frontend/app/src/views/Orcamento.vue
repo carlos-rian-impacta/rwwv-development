@@ -1,7 +1,7 @@
 <template>
-  <div class="container-fluid p-1 pe-2">
+  <div id="base-form" class="container-fluid p-1 pe-2">
     <DefaultTitle titleText="Orçamentos" titleIcon="bi-briefcase-fill" />
-    <form class="row g-0 p-3 px-4" @submit="onSubmit">
+    <form class="row g-0 p-3 px-4">
       <AlertMessage
         :alertShow="alerts.form.success"
         :alertText="alerts.form.successText"
@@ -536,6 +536,7 @@
           class="action-button me-3"
           buttonText="Novo"
           @click="onNew"
+          v-scroll-to="'#base-form'"
           :buttonActive="control.buttons.new"
           buttonColor="btn btn-primary"
           buttonIcon="bi bi-plus-circle-fill"
@@ -545,6 +546,8 @@
           buttonType="submit"
           class="action-button me-3"
           buttonText="Salvar"
+          @click="onSubmit"
+          v-scroll-to="'#base-form'"
           :buttonActive="control.buttons.save"
           buttonColor="btn btn-success"
           buttonIcon="bi bi-check-circle-fill"
@@ -561,7 +564,8 @@
         <DefaultButton
           class="action-button me-3"
           buttonText="Cancelar"
-          @click="onReset"
+          v-scroll-to="'#base-form'"
+          @click="onDoubleReset"
           buttonColor="btn btn-danger"
           buttonIcon="bi-x-circle-fill"
           buttonType="reset"
@@ -752,7 +756,7 @@
             <td class="d-flex flex-row justify-content-around">
               <button
                 @click="loadBuget(bud.id)"
-                v-scroll-to="'#table-budget'"
+                v-scroll-to="'#base-form'"
                 type="button"
                 class="btn btn-primary btn-sm m-0"
                 data-bs-toggle="tooltip"
@@ -1104,13 +1108,36 @@ export default {
         //this.control.accordion.budget = true
       }
     },
+    onDoubleReset(event) {
+      event.preventDefault();
+      this.onReset(event)
+      setTimeout(v => {
+        this.onReset()
+      }, 100)
+    },
     onReset(event) {
-      this.bu = {
-        id: "",
-        name: "",
-        product_family: "",
-        description: "",
-      };
+      this.form.bu.name = "Selecione"
+      this.form.bu.product_family = "Selecione"
+      this.form.bu.approver = "Selecione"
+        
+      this.form.totals.receita = 0
+      this.form.totals.despesas = 0
+      this.form.totals.balanco = 0
+      this.form.totals.percent = 0
+      this.form.totals.cost = 0
+        
+      this.form.status.name =  ""
+      this.form.status.status = "Rascunho"
+        
+      this.form.month.year = "Selecione"
+      this.form.month.month = "Selecione"
+      this.form.month.type = "Selecione"
+      this.form.month.value = 0
+      this.form.month.description = ""
+      this.form.month.cost = 0
+      this.form.month.comment = ""
+      this.form.month.id = 0
+        
       this.form.months = []
       this.control.buttons.new = false;
       this.control.buttons.save = true;
@@ -1125,39 +1152,41 @@ export default {
       this.control.accordion.collapseTwoArea = true;
       this.control.accordion.collapseThreeArea = true;
       this.control.disableForm = true;
-      this.validation.name = false;
-      this.validation.product_family = false;
-      this.validation.approver = false;
-      this.validation.status_name = false;
-      this.validation.status = false;
-      this.validation.year = false;
-      this.validation.month = false;
-      this.validation.type = false;
-      this.validation.value = false;
-      this.validation.cost = false;
-      this.validation.description = false;
-      this.validation.comment = false;
 
-      this.resume.imposto = 0;
-      this.resume.cost = 0;
-      this.resume.valor = 0;
-      this.resume.liquido = 0;
+      this.validation.name = false
+      this.validation.product_family = false
+      this.validation.approver = false
+      this.validation.status_name = false
+      this.validation.status = false
+      this.validation.year = false
+      this.validation.month = false
+      this.validation.type = false
+      this.validation.value = false
+      this.validation.cost = false
+      this.validation.description = false
+      this.validation.comment = false
+      
+      this.borders.bu = ""
+      this.borders.product_family = ""
+      this.borders.approver = ""
+      this.borders.name = ""
+      this.borders.status_name = ""
+      this.borders.status = ""
+      this.borders.cost = ""
+      this.borders.year = ""
+      this.borders.month = ""
+      this.borders.type = ""
+      this.borders.value = ""
+      this.borders.cost = ""
+      this.borders.description = ""
+      this.borders.comment = ""
 
-      this.borders.bu = "";
-      this.borders.product_family = "";
-      this.borders.approver = "";
-      this.borders.name = "";
-      this.borders.status_name = "";
-      this.borders.status = "";
-      this.borders.year = "";
-      this.borders.month = "";
-      this.borders.type = "";
-      this.borders.value = "";
-      this.borders.cost = "";
-      this.borders.description = "";
-      this.borders.comment = "";
+      this.accordion.collOne = "show";
+      this.accordion.collTwo = "";
+      this.accordion.collThree = "";
     },
     onNew(event) {
+
       this.bu = {
         id: "",
         name: "",
@@ -1191,7 +1220,7 @@ export default {
             this.alerts.table.error = true
             this.alerts.table.errorText = 'Ops. Problema ao alterar o status. Error: ' + err.response.data
           }).finally(e => {
-            this.disableAlertForm()
+            this.disableAlertTable();
           })
       }
     },
@@ -1231,28 +1260,29 @@ export default {
         });
     },
     async saveApprover() {
-      const data = {
-        budget_id: this.dataBudget.budget.data.id,
-        approver_id: this.dataBudget.bu.approver.id,
-      };
-      console.log(this.dataBudget.bu.approver);
-      console.log(data);
-      Approver.createApprover(data)
-        .then((resp) => {
-          console.log(resp.data);
-        })
-        .catch((err) => {
-          console.log(err);
-          console.log(err.response)
-        });
+      this.getApprover().then(() => {
+        const data = {
+          budget_id: this.dataBudget.budget.data.id,
+          approver_id: this.dataBudget.bu.approver.id,
+        };
+        console.log(this.dataBudget.bu.approver);
+        console.log(data);
+        Approver.createApprover(data)
+          .then((resp) => {
+            console.log(resp.data);
+          })
+          .catch((err) => {
+            console.log(err);
+            console.log(err.response)
+          });
+      })
     },
     onSubmit(event) {
-      event.preventDefault();
       if (this.form.months.length < 1) {
         this.alerts.form.error = true;
         this.alerts.form.errorText =
           "O orçamento não pode ser salvo. Verifique se você preencheu todos os campos e adicionou pelo menos um orçamento!";
-      } else {
+      } else {      
         const len = this.form.months.length - 1;
         this.form.months.forEach((item, index) => {
           const data = { ...item };
@@ -1269,14 +1299,16 @@ export default {
             });
           console.log("len", len, "index", index);
           if (len == index) {
-            this.listAllBUs()
-            this.listApprovers();
-            this.listBudgets();
-            this.alerts.form.success = true;
-            this.alerts.form.successText = "Orçamento gerado com sucesso.";
-            this.onReset();
+            setTimeout(() => {
+              this.listAllBUs()
+              this.listApprovers();
+              this.listBudgets();
+              this.alerts.form.success = true;
+              this.alerts.form.successText = "Orçamento gerado com sucesso.";
+              this.onDoubleReset(event);
+              }, 1000)
           }
-        });
+        })
       }
       this.disableAlertForm();
       this.disableAlertTable();
@@ -1359,9 +1391,14 @@ export default {
           this.form.month.cost = 0;
           this.form.month.description = "";
 
-
           this.validation.cost = false;
           this.borders.cost = "";
+
+          setTimeout(()=>{
+            this.validation.cost = false;
+            this.borders.cost = "";
+          }, 10)
+          
 
           this.form.totals.receita = 0;
           this.form.totals.despesas = 0;
@@ -1550,16 +1587,16 @@ export default {
         (v) => v.name == budget.status[budget.status.length - 1].status
       )[0];
       budget.months.forEach(item => {
-        item.type = item.type == 'income' ? 'Receita' : 'Despesas'
-        item.month = this.months.filter(v => v.value == item.month)[0].name
+        item.type = item.type == 'income' || item.type == 'Receita' ? 'Receita' : 'Despesas'
+        item.month = this.months.filter(v => v.value == item.month || v.name == item.month)[0].name
       })
       this.form.status.name = budget.name;
       this.form.status.status = status.value;
       this.form.bu.approver = budget.approver.email;
       this.form.months =  budget.months
       this.calculateLines()
-      this.accordion.collOne = "";
-      this.accordion.collTwo = "show";
+      this.accordion.collOne = "show";
+      this.accordion.collTwo = "";
       this.accordion.collThree = "show";
       this.control.buttons.remove = true;
       this.control.buttons.new = true;
