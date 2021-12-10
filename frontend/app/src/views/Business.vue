@@ -6,7 +6,7 @@
       titleIcon="bi-briefcase-fill"
     />
     
-    <form class="row g-0 p-3 px-4 d-flex justify-content-center" @submit="onSubmit">
+    <form class="row g-0 p-3 px-4 d-flex justify-content-center">
       <AlertMessage 
         :alertShow="control.events.alerts.form.successShow"  
         :alertText="control.events.alerts.form.successText" 
@@ -68,14 +68,15 @@
           class="action-button me-3" 
           buttonText="Novo" 
           @click="onNew" 
+          v-scroll-to="'#header-budget'"
           :buttonActive="control.buttons.new" 
           buttonColor="btn btn-primary" 
           buttonIcon="bi bi-plus-circle-fill" 
           buttonType="button"/>
         <DefaultButton 
-          buttonType="submit"
           class="action-button me-3" 
           buttonText="Salvar" 
+          @click="onSubmit"
           v-scroll-to="'#header-budget'"
           :buttonActive="control.buttons.save" 
           buttonColor="btn btn-success" 
@@ -84,6 +85,7 @@
           class="action-button me-3" 
           buttonText="Alterar"
           @click="onChange"
+          v-scroll-to="'#header-budget'"
           :buttonActive="control.buttons.edit" 
           buttonColor="btn btn-dark" 
           buttonIcon="bi-arrow-up-circle-fill" 
@@ -92,6 +94,7 @@
           class="action-button me-3" 
           buttonText="Cancelar" 
           @click="onReset" 
+          v-scroll-to="'#header-budget'"
           buttonColor="btn btn-danger" 
           buttonIcon="bi-x-circle-fill" 
           buttonType="reset"/>
@@ -130,7 +133,7 @@
             <td >{{ new Date(bu.created_at).toLocaleString('pt-BR') }}</td>
             <td >{{ new Date(bu.updated_at).toLocaleString('pt-BR') }}</td>
             <td style="max-width: 100px;">
-              <button @click="loadBu(bu.id)" type="button" class="btn btn-primary btn-sm me-3"><i class="bi bi-eye-fill"></i></button>
+              <button @click="loadBu(bu.id)" v-scroll-to="'#header-budget'" type="button" class="btn btn-primary btn-sm me-3"><i class="bi bi-eye-fill"></i></button>
               <button @click="removeBu(bu.id)" v-scroll-to="'#bu-table'" type="button" class="btn btn-danger btn-sm" ><i class="far fa-trash-alt"></i></button>
             </td>
           </tr>
@@ -246,26 +249,26 @@ export default {
         this.control.events.alerts.form.errorText = 'Verifique se todos os campos requeridos estão preenchidos corretamente.'
         this.disableAlertForm()
         return  
+      } else {
+        const data = {...this.bu}
+        data.employee_id = this.localEmployeeId
+        BU.createBu(data)
+          .then( (resp) => {
+            this.listBus(this.localEmployeeId)
+            this.onReset()
+            this.control.events.alerts.form.successShow = true
+            this.control.events.alerts.form.successText = 'BU adicionada com sucesso.'
+            this.disableAlertForm()
+          }).catch( (err) => {
+            this.control.events.alerts.form.errorShow = true
+            if (err.response.status != 422){
+              this.control.events.alerts.form.errorText = err.response.data.detail
+            }else {
+              his.control.events.alerts.form.errorText = 'Erro ao inserir a nova BU. Por favor, cheque os campos e tente novamente.'
+            }
+            this.disableAlertForm()
+          })
       }
-
-      const data = {...this.bu}
-      data.employee_id = this.localEmployeeId
-      BU.createBu(data)
-        .then( (resp) => {
-          this.listBus(this.localEmployeeId)
-          this.onReset()
-          this.control.events.alerts.form.successShow = true
-          this.control.events.alerts.form.successText = 'BU adicionada com sucesso.'
-          this.disableAlertForm()
-        }).catch( (err) => {
-          this.control.events.alerts.form.errorShow = true
-          if (err.response.status != 422){
-            this.control.events.alerts.form.errorText = err.response.data.detail
-          }else {
-            his.control.events.alerts.form.errorText = 'Erro ao inserir a nova BU. Por favor, cheque os campos e tente novamente.'
-          }
-          this.disableAlertForm()
-        })
     },
     onChange(event) {
       if (!this.validation.name || !this.validation.product_family) {

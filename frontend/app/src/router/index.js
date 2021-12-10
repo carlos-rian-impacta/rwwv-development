@@ -1,30 +1,35 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import Home from '../views/Home'
+import Login from '../views/Login'
+import Funcionario from '../views/Funcionario'
+import Orcamento from '../views/Orcamento'
+import Business from '../views/Business'
 
 const routes = [
   {
     path: '/',
     name: 'Home',
-    component: () => import('../views/Home.vue')
+    component: Home
   },
   {
     path: '/login',
     name: 'Login',
-    component: () => import('../views/Login.vue')
+    component: Login
   },
   {
     path: '/funcionario',
     name: 'Funcionario',
-    component: () => import('../views/Funcionario.vue')
+    component: Funcionario
   },
   {
     path: '/orcamento',
     name: 'Orçamento',
-    component: () => import('../views/Orcamento.vue')
+    component: Orcamento
   },
   {
     path: '/bu',
     name: 'bu',
-    component: () => import('../views/Business.vue'),
+    component: Business,
     props: true
   }
 ]

@@ -6,7 +6,7 @@
       titleIcon="bi-people-fill"
     />
     
-    <form class="row g-0 p-3 px-4" @submit="onSubmit">
+    <form class="row g-0 p-3 px-4">
       <AlertMessage :alertShow="disableAlert" v-for="al in alertList" :key="al" :alertText="al" alertType="alert-danger"/>
       <AlertMessage :alertShow="successAlert" :alertText="successMessage" alertType="alert-success"/>
 
@@ -163,10 +163,40 @@
       </div>
 
       <div class="buttons mt-4 d-flex flex-row p-0">
-        <DefaultButton class="action-button me-3" buttonText="Novo" @click="enableForm" :buttonActive="buttonNewDisable" buttonColor="btn btn-primary" buttonIcon="bi bi-plus-circle-fill" buttonType="button"/>
-        <DefaultButton class="action-button me-3" buttonText="Salvar" :buttonActive="buttonCreateDisable" buttonColor="btn btn-success" buttonIcon="bi bi-check-circle-fill"/>
-        <DefaultButton class="action-button me-3" buttonText="Alterar" @click="changeEmployee" :buttonActive="buttonUpdateDisable" buttonColor="btn btn-dark" buttonIcon="bi-arrow-up-circle-fill" buttonType="button" />
-        <DefaultButton class="action-button me-3" buttonText="Cancelar" @click="onReset" buttonColor="btn btn-danger" buttonIcon="bi-x-circle-fill" buttonType="reset"/>
+        <DefaultButton 
+          class="action-button me-3" 
+          buttonText="Novo" 
+          @click="enableForm" 
+          :buttonActive="buttonNewDisable" 
+          v-scroll-to="'#local-main'"
+          buttonColor="btn btn-primary" 
+          buttonIcon="bi bi-plus-circle-fill" 
+          buttonType="button"/>
+        <DefaultButton 
+          class="action-button me-3" 
+          buttonText="Salvar" 
+          @click="onSubmit"
+          :buttonActive="buttonCreateDisable" 
+          v-scroll-to="'#local-main'"
+          buttonColor="btn btn-success" 
+          buttonIcon="bi bi-check-circle-fill"/>
+        <DefaultButton 
+          class="action-button me-3" 
+          buttonText="Alterar" 
+          @click="changeEmployee" 
+          v-scroll-to="'#local-main'"
+          :buttonActive="buttonUpdateDisable" 
+          buttonColor="btn btn-dark" 
+          buttonIcon="bi-arrow-up-circle-fill" 
+          buttonType="button" />
+        <DefaultButton 
+          class="action-button me-3" 
+          buttonText="Cancelar" 
+          @click="onReset" 
+          v-scroll-to="'#local-main'"
+          buttonColor="btn btn-danger" 
+          buttonIcon="bi-x-circle-fill" 
+          buttonType="reset"/>
       </div>
     </form>
 

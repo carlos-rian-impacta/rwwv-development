@@ -2,8 +2,6 @@ import sqlalchemy
 from fastapi import FastAPI
 from datetime import datetime
 
-from sqlalchemy.sql.expression import true
-
 from app.config.settings import settings
 from app.model.database import Base
 from app.model.enum import (
